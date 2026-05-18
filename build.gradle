@@ -1,0 +1,46 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '4.0.6'
+    id 'io.spring.dependency-management' version '1.1.7'
+}
+
+group = 'com.hospital'
+version = '0.0.1-SNAPSHOT'
+description = 'SmartHealthcarePlatform'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // 1. Core Starters - Spring Boot sẽ tự quản lý phiên bản của Hibernate và Spring ORM
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa' // Đã bao gồm Hibernate & Transaction
+    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+    implementation 'org.springframework.boot:spring-boot-starter-web' // Thay thế cho webmvc
+
+    // 2. Database Driver
+    runtimeOnly 'com.mysql:mysql-connector-j'
+
+    // 3. Công cụ hỗ trợ code (Lombok)
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+
+    // 4. Development Tools
+    developmentOnly 'org.springframework.boot:spring-boot-devtools'
+    implementation 'org.mindrot:jbcrypt:0.4'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testCompileOnly 'org.projectlombok:lombok'
+    testAnnotationProcessor 'org.projectlombok:lombok'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
