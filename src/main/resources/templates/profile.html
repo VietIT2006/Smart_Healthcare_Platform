@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Hồ Sơ Cá Nhân - Smart Healthcare</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-success mb-4 shadow-sm">
+    <div class="container">
+        <a class="navbar-brand fw-bold" href="#">Smart Healthcare Platform</a>
+        <button class="btn btn-danger btn-sm fw-bold" onclick="logout()">Đăng Xuất</button>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0 rounded-3">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h5 class="mb-0 text-success fw-bold">Thông Tin Hồ Sơ Cá Nhân (CORE-03)</h5>
+                </div>
+                <div class="card-body p-4">
+                    <div id="statusMsg" class="alert d-none"></div>
+
+                    <form id="profileForm">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label text-muted">Tên tài khoản (Hệ thống khóa)</label>
+                                <input type="text" class="form-control bg-light" id="username" readonly>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Họ và Tên</label>
+                                <input type="text" class="form-control" id="fullName" required>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Số điện thoại</label>
+                                <input type="text" class="form-control" id="phone">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Giới tính</label>
+                                <select class="form-select" id="gender">
+                                    <option value="Nam">Nam</option>
+                                    <option value="Nữ">Nữ</option>
+                                    <option value="Khác">Khác</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Ngày sinh</label>
+                                <input type="date" class="form-control" id="dob">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Địa chỉ liên hệ</label>
+                                <input type="text" class="form-control" id="address">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-success w-100 fw-bold py-2 mt-2">Lưu Cập Nhật Hồ Sơ</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 1. Tự động load dữ liệu khi View được hiển thị lên trình duyệt
+    window.onload = function() {
+        fetch('/api/v1/users/profile')
+            .then(async response => {
+                if (response.status === 401) {
+                    window.location.href = '/login'; // Phiên hết hạn, ép về login
+                    return;
+                }
+                const data = await response.json();
+                // Map trực tiếp data DTO phẳng từ backend vào form frontend
+                document.getElementById('username').value = data.username || '';
+                document.getElementById('fullName').value = data.fullName || '';
+                document.getElementById('phone').value = data.phone || '';
+                document.getElementById('gender').value = data.gender || 'Nam';
+                document.getElementById('dob').value = data.dob || '';
+                document.getElementById('address').value = data.address || '';
+            });
+    };
+
+    // 2. Đồng bộ cập nhật thông tin cá nhân (PUT)
+    document.getElementById('profileForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const payload = {
+            fullName: document.getElementById('fullName').value,
+            phone: document.getElementById('phone').value,
+            gender: document.getElementById('gender').value,
+            dob: document.getElementById('dob').value,
+            address: document.getElementById('address').value
+        };
+
+        fetch('/api/v1/users/profile', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        })
+            .then(response => {
+                const statusMsg = document.getElementById('statusMsg');
+                statusMsg.classList.remove('d-none');
+                if (response.ok) {
+                    statusMsg.className = 'alert alert-success';
+                    statusMsg.textContent = 'Hồ sơ cá nhân đã được đồng bộ lưu thành công!';
+                } else {
+                    statusMsg.className = 'alert alert-danger';
+                    statusMsg.textContent = 'Đã xảy ra lỗi trong quá trình cập nhật!';
+                }
+            });
+    });
+
+    // 3. Hàm Đăng xuất xóa trắng phiên làm việc của session ngầm
+    function logout() {
+        fetch('/api/v1/auth/logout', { method: 'POST' })
+            .then(() => window.location.href = '/login');
+    }
+</script>
+</body>
+</html>

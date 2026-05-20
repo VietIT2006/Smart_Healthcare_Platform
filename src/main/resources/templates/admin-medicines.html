@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin - Quản lý Thuốc</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+<nav class="navbar navbar-dark bg-dark mb-4">
+    <div class="container">
+        <a class="navbar-brand fw-bold" href="#">Hệ thống Quản Trị - ADMIN</a>
+        <button class="btn btn-danger btn-sm" onclick="logout()">Đăng Xuất</button>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="card shadow-sm">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 fw-bold">Danh Mục Thuốc</h5>
+            <button class="btn btn-primary btn-sm" onclick="showAddModal()">+ Thêm Thuốc Mới</button>
+        </div>
+        <div class="card-body">
+            <table class="table table-bordered table-hover text-center">
+                <thead class="table-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>Tên Thuốc</th>
+                    <th>Nhóm</th>
+                    <th>Đơn Vị</th>
+                    <th>Đơn Giá</th>
+                    <th>Tồn Kho</th>
+                    <th>Thao Tác</th>
+                </tr>
+                </thead>
+                <tbody id="medicineTableBody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    window.onload = function() { loadMedicines(); };
+
+    function loadMedicines() {
+        fetch('/api/v1/admin/medicines')
+            .then(res => {
+                if (res.status === 403) {
+                    alert("Bạn không có quyền truy cập!"); window.location.href = '/login'; return;
+                }
+                return res.json();
+            })
+            .then(data => {
+                const tbody = document.getElementById('medicineTableBody');
+                tbody.innerHTML = '';
+                data.forEach(med => {
+                    tbody.innerHTML += `
+                    <tr>
+                        <td>${med.id}</td>
+                        <td class="text-start fw-semibold text-primary">${med.medicineName}</td>
+                        <td>${med.category}</td>
+                        <td>${med.unit}</td>
+                        <td>${med.price.toLocaleString('vi-VN')} đ</td>
+                        <td><span class="badge ${med.quantityInStock > 10 ? 'bg-success' : 'bg-danger'}">${med.quantityInStock}</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteMedicine(${med.id})">Xóa</button>
+                        </td>
+                    </tr>
+                `;
+                });
+            });
+    }
+
+    function deleteMedicine(id) {
+        if(confirm("Bạn có chắc chắn muốn xóa thuốc này?")) {
+            fetch('/api/v1/admin/medicines/' + id, { method: 'DELETE' })
+                .then(() => loadMedicines());
+        }
+    }
+
+    function logout() {
+        fetch('/api/v1/auth/logout', { method: 'POST' }).then(() => window.location.href = '/login');
+    }
+
+    // (Có thể kết nối Modal Bootstrap để thêm/sửa sau)
+</script>
+</body>
+</html>

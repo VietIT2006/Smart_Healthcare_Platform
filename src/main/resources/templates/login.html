@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Đăng nhập - Smart Healthcare</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f4f7f6; }
+        .login-container { max-width: 420px; margin-top: 100px; }
+        .card { border-radius: 15px; border: none; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+    </style>
+</head>
+<body>
+
+<div class="container login-container">
+    <div class="card p-4">
+        <h3 class="text-center mb-4 text-success fw-bold">SMART HEALTHCARE</h3>
+
+        <div id="alertBox" class="alert d-none" role="alert"></div>
+
+        <form id="loginForm">
+            <div class="mb-3">
+                <label class="form-label fw-semibold">Tên đăng nhập</label>
+                <input type="text" class="form-control" id="username" required placeholder="Nhập tài khoản...">
+            </div>
+            <div class="mb-3">
+                <label class="form-label fw-semibold">Mật khẩu</label>
+                <input type="password" class="form-control" id="password" required placeholder="Nhập mật khẩu...">
+            </div>
+            <button type="submit" class="btn btn-success w-100 fw-bold py-2 mt-2">Đăng Nhập</button>
+        </form>
+        <div class="text-center mt-3">
+            <small class="text-muted">Chưa có tài khoản? <a href="/register" class="text-success fw-semibold text-decoration-none">Đăng ký ngay</a></small>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const user = document.getElementById('username').value;
+        const pass = document.getElementById('password').value;
+        const alertBox = document.getElementById('alertBox');
+
+        fetch('/api/v1/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: user, password: pass })
+        })
+            .then(async response => {
+                const data = await response.json();
+                alertBox.classList.remove('d-none');
+
+                if (response.ok) {
+                    alertBox.className = 'alert alert-success';
+                    alertBox.textContent = "Đăng nhập thành công! Đang chuyển hướng...";
+
+                    // Đọc phân quyền từ Backend trả về để điều hướng trang chuẩn CORE-02
+                    setTimeout(() => {
+                        if (data.role === 'PATIENT') window.location.href = '/profile';
+                        else if (data.role === 'DOCTOR') window.location.href = '/api/v1/doctor/dashboard';
+                        else if (data.role === 'ADMIN') window.location.href = '/api/v1/admin/dashboard';
+                    }, 800);
+                } else {
+                    alertBox.className = 'alert alert-danger';
+                    alertBox.textContent = data.error || "Tài khoản hoặc mật khẩu không chính xác!";
+                }
+            })
+            .catch(() => {
+                alertBox.className = 'alert alert-danger';
+                alertBox.textContent = "Không thể kết nối đến máy chủ hệ thống!";
+                alertBox.classList.remove('d-none');
+            });
+    });
+</script>
+</body>
+</html>
