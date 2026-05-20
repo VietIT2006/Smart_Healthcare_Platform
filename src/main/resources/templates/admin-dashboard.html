@@ -2,82 +2,111 @@
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Admin Dashboard - Quản Lý Thuốc</title>
+    <title>Admin Dashboard - Trung Tâm Quản Trị Tối Cao</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         body { background-color: #f4f7f6; }
-        .card-stats { border-radius: 12px; transition: transform 0.2s; }
-        .card-stats:hover { transform: translateY(-3px); }
+        .nav-tabs .nav-link { color: #495057; font-weight: 600; border: none; }
+        .nav-tabs .nav-link.active { color: #198754; border-bottom: 3px solid #198754; background: none; }
     </style>
 </head>
 <body>
 
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4 shadow">
     <div class="container">
-        <a class="navbar-brand fw-bold" href="#"><i class="fa-solid fa-sliders me-2 text-danger"></i>Smart Healthcare - ADMIN</a>
+        <a class="navbar-brand fw-bold" href="#"><i class="fa-solid fa-sliders text-danger me-2"></i>Smart Healthcare - ADMIN</a>
         <button class="btn btn-danger btn-sm fw-bold" onclick="logout()"><i class="fa-solid fa-sign-out-alt me-1"></i>Đăng Xuất</button>
     </div>
 </nav>
 
 <div class="container">
-    <div class="row mb-4">
-        <div class="col-md-6 mb-2">
-            <div class="card card-stats bg-white border-0 shadow-sm p-3">
-                <div class="d-flex align-items-center justify-content-between">
-                    <div>
-                        <h6 class="text-muted mb-1">Tổng Danh Mục Thuốc Active</h6>
-                        <h3 class="fw-bold text-primary mb-0" id="totalMedCount">0</h3>
-                    </div>
-                    <div class="p-3 bg-primary bg-opacity-10 rounded-3 text-primary">
-                        <i class="fa-solid fa-pills fa-2x"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-6 mb-2">
-            <div class="card card-stats bg-white border-0 shadow-sm p-3">
-                <div class="d-flex align-items-center justify-content-between">
-                    <div>
-                        <h6 class="text-muted mb-1">Cảnh Báo Thuốc Sắp Hết (Tồn <= 10)</h6>
-                        <h3 class="fw-bold text-danger mb-0" id="lowStockCount">0</h3>
-                    </div>
-                    <div class="p-3 bg-danger bg-opacity-10 rounded-3 text-danger">
-                        <i class="fa-solid fa-triangle-exclamation fa-2x"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+    <ul class="nav nav-tabs mb-4 bg-white p-2 rounded shadow-sm" id="adminTab" role="tablist">
+        <li class="nav-item">
+            <button class="nav-link active" id="medicine-tab" data-bs-toggle="tab" data-bs-target="#medicine-panel" type="button"><i class="fa-solid fa-pills me-2"></i>Quản Lý Kho Thuốc (CORE-04)</button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" id="specialty-tab" data-bs-toggle="tab" data-bs-target="#specialty-panel" type="button" onclick="loadSpecialtySection()"><i class="fa-solid fa-hospital-user me-2"></i>Cấu Hình Khoa & Bác Sĩ</button>
+        </li>
+    </ul>
 
-    <div class="card shadow-sm border-0 rounded-3">
-        <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
-            <h5 class="mb-0 fw-bold text-dark"><i class="fa-solid fa-warehouse text-success me-2"></i>Kho Thuốc Hệ Thống</h5>
-            <button class="btn btn-success btn-sm fw-bold" onclick="showAddModal()">+ Nhập Thuốc Mới</button>
+    <div class="tab-content" id="adminTabContent">
+        <div class="tab-pane fade show active" id="medicine-panel" role="tabpanel">
+            <div class="card shadow-sm border-0 rounded-3">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+                    <h5 class="mb-0 fw-bold text-dark"><i class="fa-solid fa-warehouse text-success me-2"></i>Danh Mục Kho Thuốc Hệ Thống</h5>
+                    <button class="btn btn-success btn-sm fw-bold" onclick="showAddModal()">+ Nhập Thuốc Mới</button>
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-hover text-center align-middle mb-0">
+                        <thead class="table-light">
+                        <tr>
+                            <th>ID</th><th>Tên Thuốc</th><th>Nhóm Thuốc</th><th>Đơn Vị</th><th>Đơn Giá</th><th>Tồn Kho</th><th>Thao Tác</th>
+                        </tr>
+                        </thead>
+                        <tbody id="medicineTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
         </div>
-        <div class="card-body p-0">
-            <table class="table table-hover text-center align-middle mb-0">
-                <thead class="table-light">
-                <tr>
-                    <th>ID</th>
-                    <th>Tên Thuốc</th>
-                    <th>Nhóm Thuốc</th>
-                    <th>Đơn Vị</th>
-                    <th>Đơn Giá</th>
-                    <th>Số Lượng Tồn</th>
-                    <th>Thao Tác</th>
-                </tr>
-                </thead>
-                <tbody id="medicineTableBody"></tbody>
-            </table>
+
+        <div class="tab-pane fade" id="specialty-panel" role="tabpanel">
+            <div class="row">
+                <div class="col-md-5 mb-4">
+                    <div class="card shadow-sm border-0 rounded-3 mb-4">
+                        <div class="card-header bg-white py-3">
+                            <h6 class="mb-0 fw-bold text-primary"><i class="fa-solid fa-plus-circle me-2"></i>Định Nghĩa Chuyên Khoa Mới</h6>
+                        </div>
+                        <div class="card-body">
+                            <form id="specialtyForm">
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Tên Chuyên Khoa</label>
+                                    <input type="text" class="form-control" id="specName" required placeholder="Ví dụ: Khoa Tim Mạch, Khoa Da Liễu...">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Mô tả chức năng khoa</label>
+                                    <textarea class="form-control" id="specDesc" rows="2" placeholder="Nhập mô tả ngắn gọn..."></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100 fw-bold">Kích Hoạt Tạo Khoa</button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="card shadow-sm border-0 rounded-3">
+                        <div class="card-header bg-light py-2">
+                            <span class="fw-bold small text-secondary">Danh sách Chuyên khoa nền tảng</span>
+                        </div>
+                        <ul class="list-group list-group-flush" id="specialtyListGroup"></ul>
+                    </div>
+                </div>
+
+                <div class="col-md-7 mb-4">
+                    <div class="card shadow-sm border-0 rounded-3">
+                        <div class="card-header bg-white py-3">
+                            <h6 class="mb-0 fw-bold text-dark"><i class="fa-solid fa-user-md me-2 text-warning"></i>Danh Sách Bác Sĩ & Điều Phối Chuyên Khoa</h6>
+                        </div>
+                        <div class="card-body p-0">
+                            <table class="table table-hover text-center align-middle mb-0">
+                                <thead class="table-dark">
+                                <tr>
+                                    <th>Tên Bác Sĩ</th><th>Học Vị</th><th>Khoa Hiện Tại</th><th>Điều Chuyển Khoa</th>
+                                </tr>
+                                </thead>
+                                <tbody id="doctorTableBody">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 
 <div class="modal fade" id="medicineModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
-        <div class="modal-content border-0 shadow">
-            <div class="modal-header bg-dark text-white">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
                 <h5 class="modal-title fw-bold" id="modalTitle">Thêm Thuốc Mới</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
@@ -85,33 +114,17 @@
                 <div class="modal-body">
                     <div id="modalAlert" class="alert d-none"></div>
                     <input type="hidden" id="medId">
-
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold">Tên Thuốc</label>
-                        <input type="text" class="form-control" id="medName" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold">Nhóm Thuốc Điều Trị</label>
-                        <input type="text" class="form-control" id="medCat" required placeholder="VD: Kháng sinh, Giảm đau...">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold">Đơn Vị Tính</label>
-                        <input type="text" class="form-control" id="medUnit" required placeholder="VD: Viên, Vỉ, Chai...">
-                    </div>
+                    <div class="mb-2"><label class="form-label fw-semibold">Tên Thuốc</label><input type="text" class="form-control" id="medName" required></div>
+                    <div class="mb-2"><label class="form-label fw-semibold">Nhóm Thuốc</label><input type="text" class="form-control" id="medCat" required></div>
+                    <div class="mb-2"><label class="form-label fw-semibold">Đơn Vị Tính</label><input type="text" class="form-control" id="medUnit" required></div>
                     <div class="row">
-                        <div class="col-6 mb-2">
-                            <label class="form-label fw-semibold">Đơn Giá (VNĐ)</label>
-                            <input type="number" class="form-control" id="medPrice" required min="0">
-                        </div>
-                        <div class="col-6 mb-2">
-                            <label class="form-label fw-semibold">Số Lượng Tồn</label>
-                            <input type="number" class="form-control" id="medQty" required min="0">
-                        </div>
+                        <div class="col-6 mb-2"><label class="form-label fw-semibold">Đơn Giá</label><input type="number" class="form-control" id="medPrice" required></div>
+                        <div class="col-6 mb-2"><label class="form-label fw-semibold">Tồn Kho</label><input type="number" class="form-control" id="medQty" required></div>
                     </div>
                 </div>
-                <div class="modal-footer bg-light">
+                <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
-                    <button type="submit" class="btn btn-success fw-bold">Lưu Thông Tin</button>
+                    <button type="submit" class="btn btn-success fw-bold">Lưu</button>
                 </div>
             </form>
         </div>
@@ -121,28 +134,23 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
     let medicineModal;
+    let cachedSpecialties = []; // Lưu trữ tạm danh sách khoa để nạp vào dropdown
 
     window.onload = function() {
         medicineModal = new bootstrap.Modal(document.getElementById('medicineModal'));
         loadMedicines();
     };
 
+    // --- LOGIC PHÂN HỆ 1: KHO THUỐC ---
     function loadMedicines() {
         fetch('/api/v1/admin/medicines')
             .then(res => res.json())
             .then(data => {
                 const tbody = document.getElementById('medicineTableBody');
                 tbody.innerHTML = '';
-                let lowStock = 0;
-
                 data.forEach(med => {
-                    if(med.quantityInStock <= 10) lowStock++;
-                    tbody.innerHTML += `
-                    <tr>
-                        <td class="fw-bold">${med.id}</td>
-                        <td class="text-start fw-bold">${med.medicineName}</td>
-                        <td><span class="badge bg-light text-secondary">${med.category}</span></td>
-                        <td>${med.unit}</td>
+                    tbody.innerHTML += `<tr>
+                        <td>${med.id}</td><td class="text-start fw-bold">${med.medicineName}</td><td>${med.category}</td><td>${med.unit}</td>
                         <td class="text-danger fw-semibold">${med.price.toLocaleString('vi-VN')} đ</td>
                         <td><span class="badge ${med.quantityInStock > 10 ? 'bg-success' : 'bg-danger'}">${med.quantityInStock}</span></td>
                         <td>
@@ -151,73 +159,100 @@
                         </td>
                     </tr>`;
                 });
-                document.getElementById('totalMedCount').innerText = data.length;
-                document.getElementById('lowStockCount').innerText = lowStock;
             });
     }
 
-    function showAddModal() {
-        document.getElementById('medicineForm').reset();
-        document.getElementById('medId').value = '';
-        document.getElementById('modalTitle').innerText = 'Thêm Thuốc Mới';
-        document.getElementById('modalAlert').classList.add('d-none');
-        medicineModal.show();
-    }
-
-    function showEditModal(id, name, cat, unit, price, qty) {
-        document.getElementById('modalAlert').classList.add('d-none');
-        document.getElementById('modalTitle').innerText = 'Chỉnh Sửa Thuốc (ID: ' + id + ')';
-        document.getElementById('medId').value = id;
-        document.getElementById('medName').value = name;
-        document.getElementById('medCat').value = cat;
-        document.getElementById('medUnit').value = unit;
-        document.getElementById('medPrice').value = price;
-        document.getElementById('medQty').value = qty;
-        medicineModal.show();
-    }
+    function showAddModal() { document.getElementById('medicineForm').reset(); document.getElementById('medId').value = ''; document.getElementById('modalTitle').innerText = 'Thêm Thuốc Mới'; medicineModal.show(); }
+    function showEditModal(id, name, cat, unit, price, qty) { document.getElementById('medId').value = id; document.getElementById('medName').value = name; document.getElementById('medCat').value = cat; document.getElementById('medUnit').value = unit; document.getElementById('medPrice').value = price; document.getElementById('medQty').value = qty; document.getElementById('modalTitle').innerText = 'Sửa Thuốc'; medicineModal.show(); }
 
     document.getElementById('medicineForm').addEventListener('submit', function(e) {
         e.preventDefault();
         const id = document.getElementById('medId').value;
+        const payload = { medicineName: document.getElementById('medName').value, category: document.getElementById('medCat').value, unit: document.getElementById('medUnit').value, price: document.getElementById('medPrice').value, quantityInStock: document.getElementById('medQty').value };
+        fetch(id ? '/api/v1/admin/medicines/' + id : '/api/v1/admin/medicines', { method: id ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+            .then(() => { medicineModal.hide(); loadMedicines(); });
+    });
+
+    function deleteMedicine(id) { if(confirm("Xác nhận xóa thuốc?")) { fetch('/api/v1/admin/medicines/' + id, { method: 'DELETE' }).then(() => loadMedicines()); } }
+
+    // --- LOGIC PHÂN HỆ 2: CHUYÊN KHOA & BÁC SĨ ---
+    function loadSpecialtySection() {
+        // Tải danh sách chuyên khoa trước
+        fetch('/api/v1/admin/specialties')
+            .then(res => res.json())
+            .then(data => {
+                cachedSpecialties = data;
+                const listGroup = document.getElementById('specialtyListGroup');
+                listGroup.innerHTML = '';
+                data.forEach(spec => {
+                    listGroup.innerHTML += `<li class="list-group-item d-flex justify-content-between align-items-center fw-semibold text-muted">
+                        ${spec.name} <small class="text-secondary font-monospace">ID: ${spec.id}</small>
+                    </li>`;
+                });
+                // Sau đó tải danh sách bác sĩ để hiển thị dropdown điều chuyển khoa
+                loadDoctorsManagement();
+            });
+    }
+
+    function loadDoctorsManagement() {
+        fetch('/api/v1/admin/doctors')
+            .then(res => res.json())
+            .then(doctors => {
+                const tbody = document.getElementById('doctorTableBody');
+                tbody.innerHTML = '';
+                doctors.forEach(doc => {
+                    // Tạo chuỗi option từ danh sách khoa đã cache
+                    let options = `<option value="">-- Chọn khoa để điều phối --</option>`;
+                    cachedSpecialties.forEach(spec => {
+                        options += `<option value="${spec.id}" ${doc.specialtyName === spec.name ? 'selected' : ''}>${spec.name}</option>`;
+                    });
+
+                    tbody.innerHTML += `<tr>
+                        <td class="text-start fw-bold text-dark"><i class="fa-solid fa-user-md text-primary me-2"></i>${doc.fullName}</td>
+                        <td><span class="badge bg-light text-dark">${doc.qualification}</span></td>
+                        <td><span class="badge bg-success bg-opacity-10 text-success py-1 px-2">${doc.specialtyName}</span></td>
+                        <td>
+                            <select class="form-select form-select-sm d-inline-block w-auto" onchange="changeDoctorSpecialty(${doc.id}, this.value)">
+                                ${options}
+                            </select>
+                        </td>
+                    </tr>`;
+                });
+            });
+    }
+
+    // Gửi yêu cầu cập nhật chuyên khoa cho Bác sĩ trực tiếp khi Admin thay đổi Dropdown
+    function changeDoctorSpecialty(doctorId, specialtyId) {
+        if(!specialtyId) return;
+        fetch(`/api/v1/admin/doctors/${doctorId}/specialty?specialtyId=${specialtyId}`, { method: 'PUT' })
+            .then(res => {
+                if(res.ok) {
+                    alert("Điều chuyển chuyên khoa cho Bác sĩ thành công!");
+                    loadSpecialtySection();
+                }
+            });
+    }
+
+    // Submit form thêm mới chuyên khoa
+    document.getElementById('specialtyForm').addEventListener('submit', function(e) {
+        e.preventDefault();
         const payload = {
-            medicineName: document.getElementById('medName').value,
-            category: document.getElementById('medCat').value,
-            unit: document.getElementById('medUnit').value,
-            price: document.getElementById('medPrice').value,
-            quantityInStock: document.getElementById('medQty').value
+            name: document.getElementById('specName').value,
+            description: document.getElementById('specDesc').value
         };
-
-        const method = id ? 'PUT' : 'POST';
-        const url = id ? '/api/v1/admin/medicines/' + id : '/api/v1/admin/medicines';
-
-        fetch(url, {
-            method: method,
+        fetch('/api/v1/admin/specialties', {
+            method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
-        }).then(async response => {
-            if (response.ok) {
-                medicineModal.hide();
-                loadMedicines();
-            } else {
-                const text = await response.text();
-                const alertBox = document.getElementById('modalAlert');
-                alertBox.className = 'alert alert-danger';
-                alertBox.textContent = text;
-                alertBox.classList.remove('d-none');
+        }).then(res => {
+            if(res.ok) {
+                document.getElementById('specialtyForm').reset();
+                loadSpecialtySection();
             }
         });
     });
 
-    function deleteMedicine(id) {
-        if(confirm("Bạn có chắc chắn muốn xóa thuốc này?")) {
-            fetch('/api/v1/admin/medicines/' + id, { method: 'DELETE' }).then(() => loadMedicines());
-        }
-    }
-
-    // Đăng xuất
-    function logout() {
-        fetch('/api/v1/auth/logout', { method: 'POST' }).then(() => window.location.href = '/login');
-    }
+    function logout() { fetch('/api/v1/auth/logout', { method: 'POST' }).then(() => window.location.href = '/login'); }
 </script>
 </body>
 </html>

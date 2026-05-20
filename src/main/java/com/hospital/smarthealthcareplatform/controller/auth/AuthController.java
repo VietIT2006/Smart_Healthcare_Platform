@@ -49,4 +49,16 @@ public class AuthController {
                 "message", "Đăng nhập thành công!"
         ));
     }
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(HttpServletRequest request) {
+        // Lấy session hiện tại (nếu có)
+        HttpSession session = request.getSession(false);
+
+        if (session != null) {
+            // Hủy toàn bộ dữ liệu phiên làm việc (Xóa userId, username, userRole)
+            session.invalidate();
+        }
+
+        return ResponseEntity.ok(Map.of("message", "Đã đăng xuất tài khoản an toàn!"));
+    }
 }
