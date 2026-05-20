@@ -9,8 +9,11 @@ public class WebController {
 
     @GetMapping({"/", "/login"})
     public String loginPage(HttpSession session) {
-        if (session.getAttribute("userRole") != null) {
-            return "redirect:/profile";
+        String role = (String) session.getAttribute("userRole");
+        if (role != null) {
+            if ("ADMIN".equals(role)) return "redirect:/admin/dashboard";
+            if ("DOCTOR".equals(role)) return "redirect:/doctor/dashboard";
+            if ("PATIENT".equals(role)) return "redirect:/patient/dashboard";
         }
         return "login";
     }
@@ -20,16 +23,33 @@ public class WebController {
         return "register";
     }
 
-    @GetMapping("/profile")
-    public String profilePage(HttpSession session) {
-        if (session.getAttribute("userRole") == null) {
+    // Giao diện Dashboard cho Bệnh nhân (CORE-03 & CORE-05)
+    @GetMapping("/patient/dashboard")
+    public String patientDashboard(HttpSession session) {
+        String role = (String) session.getAttribute("userRole");
+        if (role == null || !"PATIENT".equals(role)) {
             return "redirect:/login";
         }
-        return "profile";
+        return "patient-dashboard"; // Mở file templates/patient-dashboard.html
     }
 
+    // Giao diện Dashboard cho Bác sĩ (CORE-06)
+    @GetMapping("/doctor/dashboard")
+    public String doctorDashboard(HttpSession session) {
+        String role = (String) session.getAttribute("userRole");
+        if (role == null || !"DOCTOR".equals(role)) {
+            return "redirect:/login";
+        }
+        return "doctor-dashboard"; // Mở file templates/doctor-dashboard.html
+    }
+
+    // Giao diện Dashboard cho Admin quản lý thuốc (CORE-04)
     @GetMapping("/admin/dashboard")
     public String adminDashboard(HttpSession session) {
-        return "admin-medicines";
+        String role = (String) session.getAttribute("userRole");
+        if (role == null || !"ADMIN".equals(role)) {
+            return "redirect:/login";
+        }
+        return "admin-dashboard"; // <--- Đổi từ "admin-medicines" thành "admin-dashboard"
     }
 }
