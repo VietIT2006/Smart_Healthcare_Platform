@@ -30,18 +30,18 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request, HttpServletRequest servletRequest) {
-        // 1. Gọi Service kiểm tra tài khoản, mật khẩu
         User user = userService.login(request.getUsername(), request.getPassword());
 
-        // 2. SỬA LỖI TRỘN SESSION: Hủy session cũ nếu có tồn tại trước đó
         HttpSession oldSession = servletRequest.getSession(false);
         if (oldSession != null) {
             oldSession.invalidate();
         }
 
-        // 3. Tạo một Session mới tinh độc lập hoàn toàn
         HttpSession newSession = servletRequest.getSession(true);
-        newSession.setAttribute("currentUser", user);
+        // LƯU CÁC THUỘC TÍNH NGUYÊN THỦY (Tránh lỗi lệch ClassLoader của DevTools)
+        newSession.setAttribute("userId", user.getId());
+        newSession.setAttribute("username", user.getUsername());
+        newSession.setAttribute("userRole", user.getRole().toUpperCase());
 
         return ResponseEntity.ok(Map.of(
                 "username", user.getUsername(),

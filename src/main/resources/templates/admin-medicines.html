@@ -7,22 +7,22 @@
 </head>
 <body class="bg-light">
 
-<nav class="navbar navbar-dark bg-dark mb-4">
+<nav class="navbar navbar-dark bg-dark mb-4 shadow-sm">
     <div class="container">
         <a class="navbar-brand fw-bold" href="#">Hệ thống Quản Trị - ADMIN</a>
-        <button class="btn btn-danger btn-sm" onclick="logout()">Đăng Xuất</button>
+        <button class="btn btn-danger btn-sm fw-bold" onclick="logout()">Đăng Xuất</button>
     </div>
 </nav>
 
 <div class="container">
-    <div class="card shadow-sm">
-        <div class="card-header bg-white d-flex justify-content-between align-items-center">
-            <h5 class="mb-0 fw-bold">Danh Mục Thuốc</h5>
-            <button class="btn btn-primary btn-sm" onclick="showAddModal()">+ Thêm Thuốc Mới</button>
+    <div class="card shadow-sm border-0 rounded-3">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+            <h5 class="mb-0 fw-bold text-success">Danh Mục Kho Thuốc (CORE-04)</h5>
+            <button class="btn btn-success btn-sm fw-bold" onclick="showAddModal()">+ Thêm Thuốc Mới</button>
         </div>
-        <div class="card-body">
-            <table class="table table-bordered table-hover text-center">
-                <thead class="table-dark">
+        <div class="card-body p-0">
+            <table class="table table-hover text-center align-middle mb-0">
+                <thead class="table-success">
                 <tr>
                     <th>ID</th>
                     <th>Tên Thuốc</th>
@@ -40,14 +40,68 @@
     </div>
 </div>
 
-<script>
-    window.onload = function() { loadMedicines(); };
+<div class="modal fade" id="medicineModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title fw-bold" id="modalTitle">Thêm Thuốc Mới</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="medicineForm">
+                <div class="modal-body">
+                    <div id="modalAlert" class="alert d-none"></div>
 
+                    <input type="hidden" id="medId">
+
+                    <div class="mb-2">
+                        <label class="form-label fw-semibold">Tên Thuốc</label>
+                        <input type="text" class="form-control" id="medName" required>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label fw-semibold">Nhóm Thuốc</label>
+                        <input type="text" class="form-control" id="medCat" required placeholder="VD: Kháng sinh, Giảm đau...">
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label fw-semibold">Đơn Vị Tính</label>
+                        <input type="text" class="form-control" id="medUnit" required placeholder="VD: Viên, Vỉ, Chai...">
+                    </div>
+                    <div class="row">
+                        <div class="col-6 mb-2">
+                            <label class="form-label fw-semibold">Đơn Giá (VNĐ)</label>
+                            <input type="number" class="form-control" id="medPrice" required min="0">
+                        </div>
+                        <div class="col-6 mb-2">
+                            <label class="form-label fw-semibold">Tồn Kho</label>
+                            <input type="number" class="form-control" id="medQty" required min="0">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-success fw-bold">Lưu Thông Tin</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    let medicineModal; // Biến điều khiển hộp thoại
+
+    // Khi trang tải xong, tự động gọi dữ liệu
+    window.onload = function() {
+        medicineModal = new bootstrap.Modal(document.getElementById('medicineModal'));
+        loadMedicines();
+    };
+
+    // 1. TẢI DANH SÁCH (READ)
     function loadMedicines() {
         fetch('/api/v1/admin/medicines')
             .then(res => {
-                if (res.status === 403) {
-                    alert("Bạn không có quyền truy cập!"); window.location.href = '/login'; return;
+                if (res.status === 403 || res.status === 401) {
+                    alert("Phiên đăng nhập hết hạn hoặc sai quyền!"); window.location.href = '/login'; return;
                 }
                 return res.json();
             })
@@ -57,14 +111,15 @@
                 data.forEach(med => {
                     tbody.innerHTML += `
                     <tr>
-                        <td>${med.id}</td>
-                        <td class="text-start fw-semibold text-primary">${med.medicineName}</td>
+                        <td class="fw-bold">${med.id}</td>
+                        <td class="text-start fw-bold text-success">${med.medicineName}</td>
                         <td>${med.category}</td>
                         <td>${med.unit}</td>
-                        <td>${med.price.toLocaleString('vi-VN')} đ</td>
+                        <td class="text-danger fw-semibold">${med.price.toLocaleString('vi-VN')} đ</td>
                         <td><span class="badge ${med.quantityInStock > 10 ? 'bg-success' : 'bg-danger'}">${med.quantityInStock}</span></td>
                         <td>
-                            <button class="btn btn-sm btn-outline-danger" onclick="deleteMedicine(${med.id})">Xóa</button>
+                            <button class="btn btn-sm btn-outline-primary fw-bold" onclick="showEditModal(${med.id}, '${med.medicineName}', '${med.category}', '${med.unit}', ${med.price}, ${med.quantityInStock})">Sửa</button>
+                            <button class="btn btn-sm btn-outline-danger fw-bold ms-1" onclick="deleteMedicine(${med.id})">Xóa</button>
                         </td>
                     </tr>
                 `;
@@ -72,18 +127,78 @@
             });
     }
 
+    // 2. HIỂN THỊ MODAL THÊM MỚI
+    function showAddModal() {
+        document.getElementById('medicineForm').reset();
+        document.getElementById('medId').value = ''; // Xóa ID
+        document.getElementById('modalTitle').innerText = 'Thêm Thuốc Mới';
+        document.getElementById('modalAlert').classList.add('d-none');
+        medicineModal.show();
+    }
+
+    // 3. HIỂN THỊ MODAL SỬA
+    function showEditModal(id, name, cat, unit, price, qty) {
+        document.getElementById('modalAlert').classList.add('d-none');
+        document.getElementById('modalTitle').innerText = 'Chỉnh Sửa Thuốc (ID: ' + id + ')';
+
+        // Đổ dữ liệu cũ vào Form
+        document.getElementById('medId').value = id;
+        document.getElementById('medName').value = name;
+        document.getElementById('medCat').value = cat;
+        document.getElementById('medUnit').value = unit;
+        document.getElementById('medPrice').value = price;
+        document.getElementById('medQty').value = qty;
+
+        medicineModal.show();
+    }
+
+    // 4. LƯU DỮ LIỆU (CREATE / UPDATE)
+    document.getElementById('medicineForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const id = document.getElementById('medId').value;
+        const payload = {
+            medicineName: document.getElementById('medName').value,
+            category: document.getElementById('medCat').value,
+            unit: document.getElementById('medUnit').value,
+            price: document.getElementById('medPrice').value,
+            quantityInStock: document.getElementById('medQty').value
+        };
+
+        // Nếu có ID -> Gọi API PUT (Sửa) | Nếu không có ID -> Gọi API POST (Thêm mới)
+        const method = id ? 'PUT' : 'POST';
+        const url = id ? '/api/v1/admin/medicines/' + id : '/api/v1/admin/medicines';
+
+        fetch(url, {
+            method: method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        }).then(async response => {
+            if (response.ok) {
+                medicineModal.hide(); // Đóng Modal thành công
+                loadMedicines();      // Tải lại bảng ngay lập tức
+            } else {
+                const text = await response.text();
+                const alertBox = document.getElementById('modalAlert');
+                alertBox.className = 'alert alert-danger';
+                alertBox.textContent = text; // Hiển thị lỗi trùng tên thuốc
+                alertBox.classList.remove('d-none');
+            }
+        });
+    });
+
+    // 5. XÓA THUỐC (DELETE)
     function deleteMedicine(id) {
-        if(confirm("Bạn có chắc chắn muốn xóa thuốc này?")) {
+        if(confirm("Bạn có chắc chắn muốn xóa thuốc này khỏi danh mục không?")) {
             fetch('/api/v1/admin/medicines/' + id, { method: 'DELETE' })
-                .then(() => loadMedicines());
+                .then(() => loadMedicines()); // Tải lại bảng sau khi xóa
         }
     }
 
+    // 6. ĐĂNG XUẤT
     function logout() {
         fetch('/api/v1/auth/logout', { method: 'POST' }).then(() => window.location.href = '/login');
     }
-
-    // (Có thể kết nối Modal Bootstrap để thêm/sửa sau)
 </script>
 </body>
 </html>
