@@ -1,7 +1,7 @@
 package com.hospital.smarthealthcareplatform.controller.doctor;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hospital.smarthealthcareplatform.entity.Appointment;
-import com.hospital.smarthealthcareplatform.entity.Medicine;
 import com.hospital.smarthealthcareplatform.entity.User;
 import com.hospital.smarthealthcareplatform.repository.AppointmentRepository;
 import com.hospital.smarthealthcareplatform.repository.MedicineRepository;
@@ -28,11 +28,12 @@ public class DoctorAppointmentController {
     @Autowired
     private UserRepository userRepository;
 
-    // Kéo thêm Repository thuốc vào để thực hiện nghiệp vụ trừ kho
     @Autowired
     private MedicineRepository medicineRepository;
 
-    // 1. API: Lấy danh sách bệnh nhân đang chờ khám
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
+    // 1. API: Lấy danh sách bệnh nhân đang chờ khám (PENDING)
     @GetMapping("/queue")
     @Transactional(readOnly = true)
     public ResponseEntity<?> getQueue(HttpSession session) {
@@ -42,7 +43,6 @@ public class DoctorAppointmentController {
         User user = userRepository.findById(userId).orElseThrow();
         Long doctorId = user.getDoctorProfile().getId();
 
-        // Lấy danh sách bệnh nhân đang CHỜ KHÁM (PENDING)
         List<Appointment> appointments = appointmentRepository
                 .findByDoctorIdAndStatusOrderByAppointmentDateAscAppointmentTimeAsc(doctorId, "PENDING");
 
@@ -58,48 +58,42 @@ public class DoctorAppointmentController {
         }
         return ResponseEntity.ok(response);
     }
+    // 2. API: Cấp danh sách thuốc riêng cho Bác sĩ (Vượt trạm gác Admin)
+    @GetMapping("/medicines")
+    @Transactional(readOnly = true)
+    public ResponseEntity<?> getDoctorMedicines() {
+        return ResponseEntity.ok(medicineRepository.findAll());
+    }
 
-    // 2. API: Hoàn thành ca khám, lưu bệnh án và trừ tồn kho (CORE-06)
+    // 3. API: Hoàn thành ca khám & CHUYỂN ĐƠN THUỐC XUỐNG QUẦY (CORE-08)
     @PostMapping("/complete")
-    @Transactional // Đảm bảo tính toàn vẹn: Lỗi giữa chừng sẽ Rollback không trừ thuốc
+    @Transactional
     public ResponseEntity<?> completeExam(@RequestBody Map<String, Object> payload) {
         try {
             Long appId = Long.valueOf(payload.get("appointmentId").toString());
             String diagnosis = payload.get("diagnosis").toString();
 
-            // Ép kiểu an toàn danh sách thuốc gửi lên từ giao diện
             @SuppressWarnings("unchecked")
             List<Map<String, Object>> prescriptions = (List<Map<String, Object>>) payload.get("prescriptions");
-
-            // Bước A: Cập nhật trạng thái bệnh án thành Đã khám (COMPLETED)
             Appointment app = appointmentRepository.findById(appId)
                     .orElseThrow(() -> new RuntimeException("Không tìm thấy ca khám"));
             app.setStatus("COMPLETED");
             app.setDiagnosis(diagnosis);
+
+            // LOGIC MỚI: Chỉ lưu đơn thuốc vào "túi", KHÔNG tự ý trừ kho
+            if (prescriptions != null && !prescriptions.isEmpty()) {
+                // Biến mảng thuốc thành chuỗi JSON để lưu xuống Database
+                app.setPrescriptionDetails(objectMapper.writeValueAsString(prescriptions));
+                // Bật cờ "Chờ cấp phát" để Admin nhận diện
+                app.setDispenseStatus("PENDING");
+            } else {
+                app.setDispenseStatus("NONE");
+            }
+
             appointmentRepository.save(app);
 
-            // Bước B: Duyệt qua mảng thuốc bác sĩ kê và TRỪ TỒN KHO
-            if (prescriptions != null) {
-                for (Map<String, Object> p : prescriptions) {
-                    Long medId = Long.valueOf(p.get("medicineId").toString());
-                    Integer qty = Integer.valueOf(p.get("quantity").toString());
-
-                    Medicine med = medicineRepository.findById(medId)
-                            .orElseThrow(() -> new RuntimeException("Lỗi dữ liệu thuốc"));
-
-                    // Chặn nếu bác sĩ kê vượt quá số thuốc đang có trong kho
-                    if (med.getQuantityInStock() < qty) {
-                        throw new RuntimeException("Thuốc " + med.getMedicineName() + " không đủ tồn kho!");
-                    }
-
-                    // Thực hiện trừ kho và lưu lại
-                    med.setQuantityInStock(med.getQuantityInStock() - qty);
-                    medicineRepository.save(med);
-                }
-            }
             return ResponseEntity.ok("Success");
         } catch (Exception e) {
-            // Trả về lỗi cho giao diện hiển thị thông báo
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }

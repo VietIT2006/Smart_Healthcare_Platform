@@ -6,6 +6,7 @@ import com.hospital.smarthealthcareplatform.repository.DoctorRepository;
 import com.hospital.smarthealthcareplatform.repository.SpecialtyRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -14,7 +15,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/v1/admin")
+@RequestMapping("/api/v1/admin/specialties")
 public class AdminSpecialtyController {
 
     @Autowired
@@ -23,56 +24,63 @@ public class AdminSpecialtyController {
     @Autowired
     private DoctorRepository doctorRepository;
 
-    // 1. Lấy danh sách tất cả chuyên khoa hiện có
-    @GetMapping("/specialties")
-    public ResponseEntity<List<Specialty>> getAllSpecialties() {
-        return ResponseEntity.ok(specialtyRepository.findAll());
-    }
-
-    // 2. Thêm chuyên khoa mới trực tiếp từ giao diện Admin
-    @PostMapping("/specialties")
+    // 1. API: Admin tạo chuyên khoa mới
+    @PostMapping
+    @Transactional
     public ResponseEntity<?> createSpecialty(@RequestBody Specialty specialty) {
-        if (specialty.getName() == null || specialty.getName().trim().isEmpty()) {
-            return ResponseEntity.badRequest().body("Tên chuyên khoa không được để trống!");
-        }
-        return ResponseEntity.ok(specialtyRepository.save(specialty));
+        specialtyRepository.save(specialty);
+        return ResponseEntity.ok("Thêm chuyên khoa thành công");
     }
 
-    // 3. Lấy danh sách Bác sĩ demo trong hệ thống để phục vụ gán khoa
-    // 3. Lấy danh sách Bác sĩ demo trong hệ thống để phục vụ gán khoa
+    // 2. API: Lấy danh sách TẤT CẢ Bác sĩ để Admin điều phối
     @GetMapping("/doctors")
-    public ResponseEntity<?> getAllDoctors() {
+    public ResponseEntity<?> getAllDoctorsForAdmin() {
         List<Doctor> doctors = doctorRepository.findAll();
-        List<Map<String, Object>> resultList = new ArrayList<>();
+        List<Map<String, Object>> response = new ArrayList<>();
 
         for (Doctor d : doctors) {
             Map<String, Object> map = new HashMap<>();
-            // Sửa toàn bộ set() thành put()
             map.put("id", d.getId());
-            map.put("clinicRoom", d.getClinicRoom() != null ? d.getClinicRoom() : "Chưa xếp");
-            map.put("qualification", d.getQualification() != null ? d.getQualification() : "Chưa cập nhật");
-            map.put("specialtyName", d.getSpecialty() != null ? d.getSpecialty().getName() : "Chưa gán khoa");
 
+            // Lấy tên thật của Bác sĩ từ UserProfile
             if (d.getUser() != null && d.getUser().getUserProfile() != null) {
                 map.put("fullName", d.getUser().getUserProfile().getFullName());
             } else {
                 map.put("fullName", "Bác sĩ ẩn danh");
             }
-            resultList.add(map);
+
+            map.put("qualification", d.getQualification());
+
+            // Kiểm tra xem Bác sĩ đã được gán khoa nào chưa
+            if (d.getSpecialty() != null) {
+                map.put("specialtyName", d.getSpecialty().getName());
+            } else {
+                map.put("specialtyName", null);
+            }
+
+            response.add(map);
         }
-        return ResponseEntity.ok(resultList);
+        return ResponseEntity.ok(response);
     }
 
-    // 4. API gán hoặc thay đổi chuyên khoa cho một Bác sĩ cụ thể
-    @PutMapping("/doctors/{id}/specialty")
-    public ResponseEntity<?> assignSpecialtyToDoctor(@PathVariable Long id, @RequestParam Long specialtyId) {
-        Doctor doctor = doctorRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy thông tin Bác sĩ"));
-        Specialty specialty = specialtyRepository.findById(specialtyId)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy Chuyên khoa tương ứng"));
+    // 3. API: Admin gán/điều chuyển chuyên khoa cho Bác sĩ
+    @PutMapping("/doctors/{doctorId}")
+    @Transactional
+    public ResponseEntity<?> assignSpecialtyToDoctor(@PathVariable Long doctorId, @RequestParam Long specialtyId) {
+        try {
+            Doctor doctor = doctorRepository.findById(doctorId)
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy hồ sơ Bác sĩ"));
 
-        doctor.setSpecialty(specialty);
-        doctorRepository.save(doctor);
-        return ResponseEntity.ok(Map.of("message", "Đã điều chuyển chuyên khoa cho Bác sĩ thành công!"));
+            Specialty specialty = specialtyRepository.findById(specialtyId)
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy Chuyên khoa"));
+
+            // Gán khóa ngoại specialty_id cho bác sĩ
+            doctor.setSpecialty(specialty);
+            doctorRepository.save(doctor);
+
+            return ResponseEntity.ok("Điều chuyển khoa thành công");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 }

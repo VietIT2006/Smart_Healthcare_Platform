@@ -17,4 +17,7 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
 
     // KÉO DỮ LIỆU CHO BÁC SĨ: Tìm lịch theo ID bác sĩ, lọc trạng thái (PENDING) và xếp theo giờ
     List<Appointment> findByDoctorIdAndStatusOrderByAppointmentDateAscAppointmentTimeAsc(Long doctorId, String status);
+
+    // Lấy lịch sử khám của Bệnh nhân (Sắp xếp mới nhất lên đầu)
+    List<Appointment> findByPatientIdOrderByAppointmentDateDescAppointmentTimeDesc(Long patientId);
 }

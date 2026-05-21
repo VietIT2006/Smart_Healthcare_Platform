@@ -47,4 +47,11 @@ public class Appointment {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "patient_id", nullable = false)
     private User patient;
+
+    // 🚀 BỔ SUNG CHO CORE-08: QUẢN LÝ CẤP PHÁT THUỐC
+    @Column(name = "dispense_status", length = 20)
+    private String dispenseStatus = "NONE"; // Trạng thái: NONE (Không có thuốc), PENDING (Chờ phát), COMPLETED (Đã phát)
+
+    @Column(name = "prescription_details", columnDefinition = "TEXT")
+    private String prescriptionDetails; // Lưu trữ chuỗi JSON chi tiết đơn thuốc
 }

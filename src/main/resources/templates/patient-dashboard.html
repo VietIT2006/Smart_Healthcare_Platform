@@ -2,140 +2,133 @@
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Bệnh Nhân - Bảng Điều Khiển</title>
+    <title>Bệnh Nhân - Smart Healthcare</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f8f9fa; }
+        .nav-tabs .nav-link { color: #495057; font-weight: 600; border: none; }
+        .nav-tabs .nav-link.active { color: #198754; border-bottom: 3px solid #198754; background: none; }
+    </style>
 </head>
-<body class="bg-light">
+<body>
 
-<nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4 shadow">
+<nav class="navbar navbar-expand-lg navbar-dark bg-success mb-4 shadow">
     <div class="container">
-        <a class="navbar-brand fw-bold" href="#"><i class="fa-solid fa-heart-pulse me-2"></i>Smart Healthcare - Bệnh Nhân</a>
-        <button class="btn btn-light btn-sm fw-bold text-primary" onclick="logout()"><i class="fa-solid fa-sign-out-alt me-1"></i>Đăng Xuất</button>
+        <a class="navbar-brand fw-bold" href="#"><i class="fa-solid fa-house-user me-2"></i>Cổng Bệnh Nhân Toàn Diện</a>
+        <button class="btn btn-danger btn-sm fw-bold" onclick="logout()"><i class="fa-solid fa-sign-out-alt me-1"></i>Đăng Xuất</button>
     </div>
 </nav>
 
-<div class="container">
-    <div class="row">
-        <div class="col-lg-7 mb-4">
-            <div class="card shadow-sm border-0 rounded-3 mb-4">
-                <div class="card-header bg-white py-3 border-bottom">
-                    <h5 class="mb-0 text-primary fw-bold"><i class="fa-solid fa-calendar-plus me-2"></i>Đăng Ký Lịch Hẹn Khám Hộ</h5>
+<div class="container pb-5">
+    <ul class="nav nav-tabs mb-4 bg-white p-2 rounded shadow-sm" id="patientTab" role="tablist">
+        <li class="nav-item">
+            <button class="nav-link active" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile-panel" type="button"><i class="fa-solid fa-id-card me-2"></i>Hồ Sơ Cá Nhân</button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" id="booking-tab" data-bs-toggle="tab" data-bs-target="#booking-panel" type="button"><i class="fa-solid fa-calendar-plus me-2"></i>Đặt Lịch Hẹn Khám</button>
+        </li>
+        <li class="nav-item ms-auto">
+            <button class="nav-link fw-bold text-success" id="history-tab" data-bs-toggle="tab" data-bs-target="#history-panel" type="button" onclick="loadAppointmentHistory()"><i class="fa-solid fa-clock-rotate-left me-2"></i>Lịch Sử Y Tế</button>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="patientTabContent">
+
+        <div class="tab-pane fade show active" id="profile-panel" role="tabpanel">
+            <div class="card shadow-sm border-0 rounded-3">
+                <div class="card-header bg-white py-3"><h5 class="mb-0 fw-bold text-dark"><i class="fa-solid fa-user-gear text-success me-2"></i>Thông Tin Tài Khoản</h5></div>
+                <div class="card-body">
+                    <form id="profileForm">
+                        <div class="row">
+                            <div class="col-md-6 mb-3"><label class="form-label small fw-bold">Tên đăng nhập</label><input type="text" class="form-control bg-light" id="username" readonly></div>
+                            <div class="col-md-6 mb-3"><label class="form-label small fw-bold">Họ và Tên</label><input type="text" class="form-control" id="fullName" required></div>
+                            <div class="col-md-4 mb-3"><label class="form-label small fw-bold">Số Điện Thoại</label><input type="text" class="form-control" id="phone"></div>
+                            <div class="col-md-4 mb-3"><label class="form-label small fw-bold">Giới Tính</label><select class="form-select" id="gender"><option value="Male">Nam</option><option value="Female">Nữ</option></select></div>
+                            <div class="col-md-4 mb-3"><label class="form-label small fw-bold">Ngày Sinh</label><input type="date" class="form-control" id="dob"></div>
+                            <div class="col-md-12 mb-3"><label class="form-label small fw-bold">Địa Chỉ Thường Trú</label><input type="text" class="form-control" id="address"></div>
+                        </div>
+                        <button type="submit" class="btn btn-success fw-bold px-4">Cập Nhật Cấu Hình</button>
+                    </form>
                 </div>
-                <div class="card-body p-4">
-                    <div id="bookingAlert" class="alert d-none"></div>
-                    <form id="appointmentForm">
-                        <div class="mb-3">
-                            <label class="form-label fw-semibold">1. Chọn Chuyên Khoa Khám</label>
-                            <select class="form-select" id="specialtySelect" required onchange="loadDoctorsBySpecialty()">
-                                <option value="">-- Đang tải dữ liệu chuyên khoa... --</option>
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label fw-semibold">2. Chọn Bác Sĩ Phụ Trách</label>
-                            <select class="form-select" id="doctorSelect" required>
-                                <option value="">-- Vui lòng chọn chuyên khoa trước --</option>
-                            </select>
-                        </div>
-                        <div class="row mb-3">
-                            <div class="col-6">
-                                <label class="form-label fw-semibold">3. Chọn Ngày Hẹn</label>
-                                <input type="date" class="form-control" id="appDate" required>
-                            </div>
-                            <div class="col-6">
-                                <label class="form-label fw-semibold">4. Khung Giờ Khám</label>
-                                <select class="form-select" id="appTime" required>
-                                    <option value="08:00:00">08:00 Sáng</option>
-                                    <option value="09:00:00">09:00 Sáng</option>
-                                    <option value="10:00:00">10:00 Sáng</option>
-                                    <option value="14:00:00">14:00 Chiều</option>
-                                    <option value="15:00:00">15:00 Chiều</option>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="booking-panel" role="tabpanel">
+            <div class="card shadow-sm border-0 rounded-3">
+                <div class="card-header bg-white py-3"><h5 class="mb-0 fw-bold text-dark"><i class="fa-solid fa-file-invoice text-primary me-2"></i>Đăng Ký Khám Bệnh Trực Tuyến</h5></div>
+                <div class="card-body">
+                    <form id="bookingForm">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold">1. Chọn Chuyên Khoa Khám</label>
+                                <select class="form-select" id="specialtySelect" required onchange="loadDoctorsBySpecialty()">
+                                    <option value="">-- Đang tải dữ liệu chuyên khoa... --</option>
                                 </select>
                             </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold">2. Chọn Bác Sĩ Phụ Trách</label>
+                                <select class="form-select" id="doctorSelect" required>
+                                    <option value="">-- Vui lòng chọn chuyên khoa trước --</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3"><label class="form-label fw-semibold">3. Ngày Khám Hẹn</label><input type="date" class="form-control" id="appDate" required></div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold">4. Khung Giờ Khám</label>
+                                <select class="form-select" id="appTime" required>
+                                    <option value="08:00:00">08:00 Sáng</option><option value="09:00:00">09:00 Sáng</option>
+                                    <option value="10:00:00">10:00 Sáng</option><option value="14:00:00">14:00 Chiều</option>
+                                    <option value="15:00:00">15:00 Chiều</option><option value="16:00:00">16:00 Chiều</option>
+                                </select>
+                            </div>
+                            <div class="col-md-12 mb-4"><label class="form-label fw-semibold">5. Triệu chứng lâm sàng / Lý do khám</label><textarea class="form-control" id="symptoms" rows="3" placeholder="Nhập mô tả tình trạng sức khỏe hiện tại của bạn..." required></textarea></div>
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label fw-semibold">Ghi chú triệu chứng lâm sàng</label>
-                            <textarea class="form-control" id="symptoms" rows="3" required placeholder="Nhập các biểu hiện mệt mỏi, đau nhức hiện tại..."></textarea>
-                        </div>
-                        <button type="submit" class="btn btn-primary w-100 fw-bold py-2">Xác Nhận Đặt Lịch Hẹn</button>
+                        <button type="submit" class="btn btn-primary w-100 py-2 fw-bold fs-5 shadow">Xác Nhận Đặt Lịch Hẹn Khám</button>
                     </form>
                 </div>
             </div>
+        </div>
 
+        <div class="tab-pane fade" id="history-panel" role="tabpanel">
             <div class="card shadow-sm border-0 rounded-3">
-                <div class="card-header bg-white py-3">
-                    <h6 class="mb-0 fw-bold text-dark"><i class="fa-solid fa-clock-history me-2 text-secondary"></i>Lịch Sử Các Lần Khám Bệnh (CORE-07)</h6>
+                <div class="card-header bg-success text-white py-3">
+                    <h5 class="mb-0 fw-bold"><i class="fa-solid fa-notes-medical me-2"></i>Hồ Sơ Khám & Lịch Sử Đặt Lịch</h5>
                 </div>
                 <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle mb-0 text-center">
-                            <thead class="table-light">
-                            <tr>
-                                <th>Ngày Khám</th>
-                                <th>Bác Sĩ</th>
-                                <th>Triệu Chứng</th>
-                                <th>Trạng Thái</th>
-                            </tr>
-                            </thead>
-                            <tbody id="historyTableBody">
-                            <tr><td colspan="4" class="text-muted p-3">Chưa có lịch sử khám bệnh nào.</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
+                    <table class="table table-hover align-middle text-center mb-0">
+                        <thead class="table-light">
+                        <tr><th>Mã Hẹn</th><th>Ngày & Giờ Khám</th><th>Bác Sĩ Trực Tiếp</th><th>Kết Luận Chẩn Đoán</th><th>Trạng Thái</th><th>Hành Động</th></tr>
+                        </thead>
+                        <tbody id="historyTableBody"></tbody>
+                    </table>
                 </div>
             </div>
         </div>
 
-        <div class="col-lg-5 mb-4">
-            <div class="card shadow-sm border-0 rounded-3">
-                <div class="card-header bg-white py-3 border-bottom">
-                    <h5 class="mb-0 text-secondary fw-bold"><i class="fa-solid fa-user-gear me-2"></i>Hồ Sơ Cá Nhân (CORE-03)</h5>
-                </div>
-                <div class="card-body p-4">
-                    <div id="profileAlert" class="alert d-none"></div>
-                    <form id="profileForm">
-                        <div class="mb-3">
-                            <label class="form-label text-muted fw-semibold">Tên tài khoản</label>
-                            <input type="text" class="form-control bg-light" id="username" readonly>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label fw-semibold">Họ và Tên</label>
-                            <input type="text" class="form-control" id="fullName" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label fw-semibold">Số điện thoại</label>
-                            <input type="text" class="form-control" id="phone">
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label fw-semibold">Địa chỉ thường trú</label>
-                            <input type="text" class="form-control" id="address">
-                        </div>
-                        <button type="submit" class="btn btn-outline-secondary w-100 fw-bold">Đồng Bộ Cập Nhật Hồ Sơ</button>
-                    </form>
-                </div>
-            </div>
-        </div>
     </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
     window.onload = function() {
-        // 1. Tải thông tin hồ sơ
+        // Nạp thông tin hồ sơ bệnh nhân khi mở trang
         fetch('/api/v1/users/profile')
             .then(res => res.json())
             .then(data => {
                 document.getElementById('username').value = data.username || '';
                 document.getElementById('fullName').value = data.fullName || '';
                 document.getElementById('phone').value = data.phone || '';
+                document.getElementById('gender').value = data.gender || 'Male';
+                document.getElementById('dob').value = data.dob || '';
                 document.getElementById('address').value = data.address || '';
             });
 
-        // 2. TỰ ĐỘNG TẢI DANH SÁCH CHUYÊN KHOA TỪ DATABASE
+        // Tự động kéo danh sách chuyên khoa động từ CSDL
         fetch('/api/v1/patient/specialties')
             .then(res => res.json())
             .then(data => {
                 const specSelect = document.getElementById('specialtySelect');
-                specSelect.innerHTML = '<option value="">-- Chọn chuyên khoa --</option>';
+                specSelect.innerHTML = '<option value="">-- Chọn chuyên khoa khám --</option>';
                 data.forEach(spec => {
                     specSelect.innerHTML += `<option value="${spec.id}">${spec.name}</option>`;
                 });
@@ -147,55 +140,106 @@
     function loadDoctorsBySpecialty() {
         const specId = document.getElementById('specialtySelect').value;
         const docSelect = document.getElementById('doctorSelect');
-        if(!specId) { docSelect.innerHTML = '<option value="">-- Chọn chuyên khoa trước --</option>'; return; }
-
-        docSelect.innerHTML = '<option value="">-- Đang tải danh sách bác sĩ --</option>';
-        fetch('/api/v1/patient/doctors?specialtyId=' + specId)
+        if (!specId) {
+            docSelect.innerHTML = '<option value="">-- Vui lòng chọn chuyên khoa trước --</option>';
+            return;
+        }
+        fetch(`/api/v1/patient/doctors?specialtyId=${specId}`)
             .then(res => res.json())
             .then(data => {
-                docSelect.innerHTML = '';
-                if(data.length === 0) {
-                    docSelect.innerHTML = '<option value="">Không có bác sĩ nào trực thuộc</option>';
-                    return;
-                }
+                docSelect.innerHTML = '<option value="">-- Chọn bác sĩ phụ trách --</option>';
                 data.forEach(doc => {
-                    docSelect.innerHTML += `<option value="${doc.id}">BS. ${doc.fullName} (${doc.qualification})</option>`;
+                    docSelect.innerHTML += `<option value="${doc.id}">${doc.fullName} (${doc.qualification})</option>`;
                 });
             });
     }
 
-    document.getElementById('appointmentForm').addEventListener('submit', function(e) {
+    document.getElementById('profileForm').onsubmit = function(e) {
         e.preventDefault();
-        const alertBox = document.getElementById('bookingAlert');
+        const payload = {
+            fullName: document.getElementById('fullName').value,
+            phone: document.getElementById('phone').value,
+            gender: document.getElementById('gender').value,
+            dob: document.getElementById('dob').value,
+            address: document.getElementById('address').value
+        };
+        fetch('/api/v1/users/profile', {
+            method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+        }).then(res => { if(res.ok) alert("🎉 Hồ sơ cá nhân cập nhật thành công!"); });
+    };
+
+    document.getElementById('bookingForm').onsubmit = function(e) {
+        e.preventDefault();
         const payload = {
             doctorId: document.getElementById('doctorSelect').value,
             appointmentDate: document.getElementById('appDate').value,
             appointmentTime: document.getElementById('appTime').value,
             symptoms: document.getElementById('symptoms').value
         };
-
         fetch('/api/v1/patient/appointments', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        })
+            method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+        }).then(async res => {
+            if (res.ok) {
+                alert("🎉 Đăng ký đặt lịch hẹn thành công!");
+                document.getElementById('bookingForm').reset();
+                loadAppointmentHistory();
+            } else {
+                const err = await res.text(); alert("Lỗi đặt lịch: " + err);
+            }
+        });
+    };
+
+    // CORE-07: Tải lịch sử khám bệnh
+    function loadAppointmentHistory() {
+        fetch('/api/v1/patient/appointments/history')
+            .then(res => res.json())
+            .then(data => {
+                const tbody = document.getElementById('historyTableBody');
+                tbody.innerHTML = '';
+                if (data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="py-4 text-muted fw-bold">Bạn chưa có lịch sử đặt lịch nào.</td></tr>';
+                    return;
+                }
+                data.forEach(app => {
+                    let statusBadge = ''; let statusText = ''; let actionBtn = '';
+
+                    if (app.status === 'COMPLETED') {
+                        statusBadge = 'bg-success'; statusText = 'Đã khám';
+                    } else if (app.status === 'PENDING') {
+                        statusBadge = 'bg-warning text-dark'; statusText = 'Chờ khám';
+                        // Nút hủy chủ động (CORE-09)
+                        actionBtn = `<button class="btn btn-outline-danger btn-sm fw-bold shadow-sm" onclick="cancelAppointment(${app.id})"><i class="fa-solid fa-ban me-1"></i>Hủy lịch</button>`;
+                    } else {
+                        statusBadge = 'bg-secondary'; statusText = 'Đã hủy';
+                    }
+
+                    let diagnosisHtml = app.diagnosis ? `<span class="text-success fw-semibold">${app.diagnosis}</span>` : '<span class="text-muted small">Chưa có kết luận</span>';
+
+                    tbody.innerHTML += `<tr>
+                        <td class="fw-bold">#${app.id}</td>
+                        <td><span class="d-block fw-semibold">${app.date}</span><span class="text-danger fw-bold small">${app.time}</span></td>
+                        <td class="text-start"><i class="fa-solid fa-user-md text-primary me-1"></i>${app.doctorName}<br><small class="text-muted">${app.specialty}</small></td>
+                        <td class="text-start">${diagnosisHtml}</td>
+                        <td><span class="badge ${statusBadge}">${statusText}</span></td>
+                        <td>${actionBtn}</td>
+                    </tr>`;
+                });
+            });
+    }
+
+    // CORE-09: Xử lý sự kiện Hủy lịch chủ động
+    function cancelAppointment(id) {
+        if(!confirm("Xác nhận hủy lịch khám này?\nHệ thống chỉ chấp nhận lệnh hủy trước thời điểm khám tối thiểu 24 giờ.")) return;
+
+        fetch('/api/v1/patient/appointments/cancel/' + id, { method: 'PUT' })
             .then(async res => {
-                alertBox.classList.remove('d-none');
-                if(res.ok) {
-                    alertBox.className = "alert alert-success";
-                    alertBox.innerText = "Đặt lịch thành công! Đang ở trạng thái Chờ khám.";
-                    document.getElementById('appointmentForm').reset();
+                if (res.ok) {
+                    alert("✅ Hệ thống đã tiếp nhận yêu cầu hủy lịch thành công!");
                     loadAppointmentHistory();
                 } else {
-                    const err = await res.json();
-                    alertBox.className = "alert alert-danger";
-                    alertBox.innerText = err.error || "Khung giờ này đã bị trùng lịch! Vui lòng chọn giờ khác.";
+                    const err = await res.text(); alert("Không thể hủy lịch: " + err);
                 }
             });
-    });
-
-    function loadAppointmentHistory() {
-        // Tích hợp API lấy lịch sử ở CORE-07 sau này
     }
 
     function logout() {

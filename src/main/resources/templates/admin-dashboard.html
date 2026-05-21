@@ -9,6 +9,7 @@
         body { background-color: #f4f7f6; }
         .nav-tabs .nav-link { color: #495057; font-weight: 600; border: none; }
         .nav-tabs .nav-link.active { color: #198754; border-bottom: 3px solid #198754; background: none; }
+        #dispense-tab.active { color: #dc3545; border-bottom: 3px solid #dc3545; }
     </style>
 </head>
 <body>
@@ -20,47 +21,34 @@
     </div>
 </nav>
 
-<div class="container">
-    <li class="nav-item">
-        <button class="nav-link" id="appointment-tab" data-bs-toggle="tab" data-bs-target="#appointment-panel" type="button" onclick="loadAllAppointments()"><i class="fa-solid fa-calendar-check me-2"></i>Lịch Sử Khám Bệnh</button>
-    </li>
+<div class="container pb-5">
     <ul class="nav nav-tabs mb-4 bg-white p-2 rounded shadow-sm" id="adminTab" role="tablist">
         <li class="nav-item">
-            <button class="nav-link active" id="medicine-tab" data-bs-toggle="tab" data-bs-target="#medicine-panel" type="button"><i class="fa-solid fa-pills me-2"></i>Quản Lý Kho Thuốc (CORE-04)</button>
+            <button class="nav-link active" id="medicine-tab" data-bs-toggle="tab" data-bs-target="#medicine-panel" type="button"><i class="fa-solid fa-warehouse me-2"></i>Quản Lý Kho Thuốc</button>
         </li>
         <li class="nav-item">
-            <button class="nav-link" id="specialty-tab" data-bs-toggle="tab" data-bs-target="#specialty-panel" type="button" onclick="loadSpecialtySection()"><i class="fa-solid fa-hospital-user me-2"></i>Cấu Hình Khoa & Bác Sĩ</button>
+            <button class="nav-link" id="specialty-tab" data-bs-toggle="tab" data-bs-target="#specialty-panel" type="button"><i class="fa-solid fa-hospital-user me-2"></i>Cấu Hình Khoa & Bác Sĩ</button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" id="appointment-tab" data-bs-toggle="tab" data-bs-target="#appointment-panel" type="button"><i class="fa-solid fa-calendar-check me-2"></i>Lịch Sử Khám Bệnh</button>
+        </li>
+        <li class="nav-item ms-auto">
+            <button class="nav-link fw-bold text-danger" id="dispense-tab" data-bs-toggle="tab" data-bs-target="#dispense-panel" type="button"><i class="fa-solid fa-prescription-bottle-medical me-2"></i>Quầy Cấp Phát Thuốc</button>
         </li>
     </ul>
 
     <div class="tab-content" id="adminTabContent">
-        <div class="tab-pane fade" id="appointment-panel" role="tabpanel">
-            <div class="card shadow-sm border-0 rounded-3">
-                <div class="card-header bg-white py-3">
-                    <h5 class="mb-0 fw-bold text-dark"><i class="fa-solid fa-clock-rotate-left text-info me-2"></i>Toàn Bộ Lịch Sử Đặt Lịch & Khám Bệnh</h5>
-                </div>
-                <div class="card-body p-0">
-                    <table class="table table-hover text-center align-middle mb-0">
-                        <thead class="table-info">
-                        <tr><th>Mã Hẹn</th><th>Bệnh Nhân</th><th>Bác Sĩ Phụ Trách</th><th>Ngày Khám</th><th>Giờ Khám</th><th>Trạng Thái</th></tr>
-                        </thead>
-                        <tbody id="appointmentTableBody"></tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
+
         <div class="tab-pane fade show active" id="medicine-panel" role="tabpanel">
             <div class="card shadow-sm border-0 rounded-3">
                 <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
-                    <h5 class="mb-0 fw-bold text-dark"><i class="fa-solid fa-warehouse text-success me-2"></i>Danh Mục Kho Thuốc Hệ Thống</h5>
+                    <h5 class="mb-0 fw-bold text-dark"><i class="fa-solid fa-pills text-success me-2"></i>Danh Mục Kho Thuốc Hệ Thống</h5>
                     <button class="btn btn-success btn-sm fw-bold" onclick="showAddModal()">+ Nhập Thuốc Mới</button>
                 </div>
                 <div class="card-body p-0">
                     <table class="table table-hover text-center align-middle mb-0">
                         <thead class="table-light">
-                        <tr>
-                            <th>ID</th><th>Tên Thuốc</th><th>Nhóm Thuốc</th><th>Đơn Vị</th><th>Đơn Giá</th><th>Tồn Kho</th><th>Thao Tác</th>
-                        </tr>
+                        <tr><th>ID</th><th>Tên Thuốc</th><th>Nhóm Thuốc</th><th>Đơn Vị</th><th>Đơn Giá</th><th>Tồn Kho</th></tr>
                         </thead>
                         <tbody id="medicineTableBody"></tbody>
                     </table>
@@ -79,61 +67,87 @@
                             <form id="specialtyForm">
                                 <div class="mb-3">
                                     <label class="form-label fw-semibold">Tên Chuyên Khoa</label>
-                                    <input type="text" class="form-control" id="specName" required placeholder="Ví dụ: Khoa Tim Mạch, Khoa Da Liễu...">
+                                    <input type="text" class="form-control" id="specName" required placeholder="Ví dụ: Khoa Tim Mạch...">
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label fw-semibold">Mô tả chức năng khoa</label>
-                                    <textarea class="form-control" id="specDesc" rows="2" placeholder="Nhập mô tả ngắn gọn..."></textarea>
+                                    <textarea class="form-control" id="specDesc" rows="2"></textarea>
                                 </div>
                                 <button type="submit" class="btn btn-primary w-100 fw-bold">Kích Hoạt Tạo Khoa</button>
                             </form>
                         </div>
                     </div>
-
                     <div class="card shadow-sm border-0 rounded-3">
-                        <div class="card-header bg-light py-2">
-                            <span class="fw-bold small text-secondary">Danh sách Chuyên khoa nền tảng</span>
-                        </div>
+                        <div class="card-header bg-light py-2"><span class="fw-bold small text-secondary">Danh sách Khoa Nền Tảng</span></div>
                         <ul class="list-group list-group-flush" id="specialtyListGroup"></ul>
                     </div>
                 </div>
-
                 <div class="col-md-7 mb-4">
                     <div class="card shadow-sm border-0 rounded-3">
                         <div class="card-header bg-white py-3">
-                            <h6 class="mb-0 fw-bold text-dark"><i class="fa-solid fa-user-md me-2 text-warning"></i>Danh Sách Bác Sĩ & Điều Phối Chuyên Khoa</h6>
+                            <h6 class="mb-0 fw-bold text-dark"><i class="fa-solid fa-user-md me-2 text-warning"></i>Danh Sách Bác Sĩ & Điều Phối Khoa</h6>
                         </div>
                         <div class="card-body p-0">
                             <table class="table table-hover text-center align-middle mb-0">
                                 <thead class="table-dark">
-                                <tr>
-                                    <th>Tên Bác Sĩ</th><th>Học Vị</th><th>Khoa Hiện Tại</th><th>Điều Chuyển Khoa</th>
-                                </tr>
+                                <tr><th>Tên Bác Sĩ</th><th>Học Vị</th><th>Khoa Hiện Tại</th><th>Điều Chuyển Khoa</th></tr>
                                 </thead>
-                                <tbody id="doctorTableBody">
-                                </tbody>
+                                <tbody id="doctorTableBody"></tbody>
                             </table>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+
+        <div class="tab-pane fade" id="appointment-panel" role="tabpanel">
+            <div class="card shadow-sm border-0 rounded-3">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0 fw-bold text-dark"><i class="fa-solid fa-clock-rotate-left text-info me-2"></i>Toàn Bộ Lịch Sử Đặt Lịch & Khám Bệnh</h5>
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-hover text-center align-middle mb-0">
+                        <thead class="table-info">
+                        <tr><th>Mã Hẹn</th><th>Bệnh Nhân</th><th>Bác Sĩ Phụ Trách</th><th>Ngày Khám</th><th>Giờ Khám</th><th>Trạng Thái</th></tr>
+                        </thead>
+                        <tbody id="appointmentTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="dispense-panel" role="tabpanel">
+            <div class="card shadow-sm border-0 rounded-3 border-danger">
+                <div class="card-header bg-danger text-white py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 fw-bold"><i class="fa-solid fa-box-open me-2"></i>Đơn Thuốc Chờ Cấp Phát</h5>
+                    <button class="btn btn-outline-light btn-sm" onclick="loadDispensations()"><i class="fa-solid fa-rotate-right me-1"></i>Làm mới</button>
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-hover align-middle text-center mb-0">
+                        <thead class="table-light">
+                        <tr><th>Mã Ca Khám</th><th>Bệnh Nhân</th><th>Bác Sĩ Kê Đơn</th><th class="text-start">Chi Tiết Đơn Thuốc</th><th>Hành Động</th></tr>
+                        </thead>
+                        <tbody id="dispenseTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
     </div>
 </div>
 
-<div class="modal fade" id="medicineModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="medicineModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header bg-success text-white">
                 <h5 class="modal-title fw-bold" id="modalTitle">Thêm Thuốc Mới</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <form id="medicineForm">
                 <div class="modal-body">
-                    <div id="modalAlert" class="alert d-none"></div>
                     <input type="hidden" id="medId">
                     <div class="mb-2"><label class="form-label fw-semibold">Tên Thuốc</label><input type="text" class="form-control" id="medName" required></div>
-                    <div class="mb-2"><label class="form-label fw-semibold">Nhóm Thuốc</label><input type="text" class="form-control" id="medCat" required></div>
+                    <div class="mb-2"><label class="form-label fw-semibold">Nhóm Thuốc</label><input type="text" class="form-control" id="medCat"></div>
                     <div class="mb-2"><label class="form-label fw-semibold">Đơn Vị Tính</label><input type="text" class="form-control" id="medUnit" required></div>
                     <div class="row">
                         <div class="col-6 mb-2"><label class="form-label fw-semibold">Đơn Giá</label><input type="number" class="form-control" id="medPrice" required></div>
@@ -142,7 +156,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
-                    <button type="submit" class="btn btn-success fw-bold">Lưu</button>
+                    <button type="submit" class="btn btn-success fw-bold">Lưu Thuốc</button>
                 </div>
             </form>
         </div>
@@ -151,149 +165,187 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    let prescriptionList = []; // Mảng lưu trữ danh sách thuốc bác sĩ đang kê
+    let specialtiesGlobal = [];
+    const medicineModal = new bootstrap.Modal(document.getElementById('medicineModal'));
 
     window.onload = function() {
-        loadQueue();
-        loadMedicines(); // Nạp danh sách thuốc vào dropdown
+        // Tải dữ liệu cho toàn bộ các Tab khi vào trang
+        loadMedicines();
+        loadAllAppointments();
+        loadSpecialtiesAndDoctors();
+        loadDispensations();
     };
 
-    // 1. Tải danh sách bệnh nhân chờ khám (Đã làm ở bước trước)
-    function loadQueue() {
-        fetch('/api/v1/doctor/appointments/queue')
+    // ================= 1. LOGIC KHO THUỐC =================
+    function loadMedicines() {
+        fetch('/api/v1/admin/medicines')
             .then(res => res.json())
             .then(data => {
-                const queueList = document.getElementById('queueList');
-                queueList.innerHTML = '';
-                if (data.length === 0) {
-                    queueList.innerHTML = '<div class="text-center p-4 text-muted"><i class="fa-solid fa-mug-hot fa-2x mb-2"></i><br>Chưa có bệnh nhân nào đặt lịch.</div>';
-                    return;
-                }
-                data.forEach(app => {
-                    queueList.innerHTML += `
-                    <button class="list-group-item list-group-item-action py-3 border-bottom" onclick="selectAppointment(${app.id}, '${app.symptoms}')">
-                        <div class="d-flex w-100 justify-content-between align-items-center">
-                            <h6 class="mb-1 fw-bold text-primary"><i class="fa-solid fa-hospital-user me-2"></i>${app.patientName}</h6>
-                            <span class="badge bg-danger rounded-pill">${app.time}</span>
-                        </div>
-                        <p class="mb-1 small text-secondary mt-2"><b>Triệu chứng:</b> ${app.symptoms}</p>
-                        <small class="text-muted"><i class="fa-regular fa-calendar me-1"></i>${app.date}</small>
-                    </button>`;
+                const tbody = document.getElementById('medicineTableBody');
+                tbody.innerHTML = '';
+                data.forEach(med => {
+                    tbody.innerHTML += `<tr>
+                        <td class="fw-bold">${med.id}</td>
+                        <td class="text-start fw-semibold text-primary">${med.medicineName}</td>
+                        <td>${med.category || 'Chưa phân loại'}</td>
+                        <td>${med.unit}</td>
+                        <td>${med.price.toLocaleString()} đ</td>
+                        <td class="fw-bold text-danger">${med.quantityInStock}</td>
+                    </tr>`;
                 });
             });
     }
 
-    // 2. Chọn bệnh nhân để khám
-    function selectAppointment(id, symptoms) {
-        document.getElementById('selectedAppId').value = id;
-        document.getElementById('patientSymptoms').value = symptoms;
-        document.getElementById('welcomeCard').classList.add('d-none');
-        document.getElementById('examCard').classList.remove('d-none');
-
-        // Reset form cho bệnh nhân mới
-        document.getElementById('diagnosis').value = '';
-        prescriptionList = [];
-        renderPrescriptionTable();
+    function showAddModal() {
+        document.getElementById('medicineForm').reset();
+        document.getElementById('medId').value = '';
+        medicineModal.show();
     }
 
-    // 3. Tải danh sách thuốc từ kho (phục vụ kê đơn)
-    function loadMedicines() {
-        fetch('/api/v1/admin/medicines') // Gọi sang kho API của Admin (hoặc API dùng chung)
-            .then(res => res.json())
-            .then(data => {
-                const medSelect = document.getElementById('medSelect');
-                medSelect.innerHTML = '<option value="">-- Chọn thuốc điều trị --</option>';
-                data.forEach(med => {
-                    // Lưu số lượng tồn kho vào attribute data-stock để JS kiểm tra
-                    medSelect.innerHTML += `<option value="${med.id}" data-name="${med.medicineName}" data-stock="${med.quantityInStock}">${med.medicineName} (Kho còn: ${med.quantityInStock})</option>`;
-                });
-            }).catch(err => console.log("Không tải được thuốc", err));
-    }
-
-    // 4. Xử lý nút [+] Kê thêm thuốc vào đơn
-    function addMedicineToPrescription() {
-        const medSelect = document.getElementById('medSelect');
-        const medId = medSelect.value;
-        const qty = parseInt(document.getElementById('medQty').value);
-
-        if (!medId || qty <= 0) {
-            alert("Vui lòng chọn thuốc và nhập số lượng hợp lệ!");
-            return;
-        }
-
-        const selectedOption = medSelect.options[medSelect.selectedIndex];
-        const medName = selectedOption.getAttribute('data-name');
-        const stock = parseInt(selectedOption.getAttribute('data-stock'));
-
-        if (qty > stock) {
-            alert(`Lỗi: Kho không đủ thuốc! Chỉ còn ${stock} viên/lọ.`);
-            return;
-        }
-
-        // Kiểm tra xem thuốc đã có trong đơn chưa
-        const existingIndex = prescriptionList.findIndex(p => p.medicineId == medId);
-        if (existingIndex >= 0) {
-            if (prescriptionList[existingIndex].quantity + qty > stock) {
-                alert(`Lỗi: Tổng số lượng bạn kê đã vượt quá tồn kho (${stock})!`);
-                return;
-            }
-            prescriptionList[existingIndex].quantity += qty;
-        } else {
-            // Thêm mới vào mảng
-            prescriptionList.push({ medicineId: medId, name: medName, quantity: qty });
-        }
-        renderPrescriptionTable();
-    }
-
-    // 5. Xóa thuốc khỏi đơn
-    function removeMedicine(medId) {
-        prescriptionList = prescriptionList.filter(p => p.medicineId != medId);
-        renderPrescriptionTable();
-    }
-
-    // 6. Vẽ lại bảng đơn thuốc trên giao diện
-    function renderPrescriptionTable() {
-        const tbody = document.getElementById('prescriptionBody');
-        tbody.innerHTML = '';
-        prescriptionList.forEach(p => {
-            tbody.innerHTML += `
-            <tr>
-                <td class="fw-semibold text-start">${p.name}</td>
-                <td class="fw-bold text-primary">${p.quantity}</td>
-                <td><button type="button" class="btn btn-sm btn-outline-danger" onclick="removeMedicine(${p.medicineId})"><i class="fa-solid fa-trash"></i></button></td>
-            </tr>`;
+    document.getElementById('medicineForm').onsubmit = function(e) {
+        e.preventDefault();
+        const payload = {
+            medicineName: document.getElementById('medName').value,
+            category: document.getElementById('medCat').value,
+            unit: document.getElementById('medUnit').value,
+            price: document.getElementById('medPrice').value,
+            quantityInStock: document.getElementById('medQty').value
+        };
+        fetch('/api/v1/admin/medicines', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+        }).then(res => {
+            if(res.ok) { medicineModal.hide(); loadMedicines(); }
         });
     }
 
-    // 7. Xử lý nút [Hoàn Thành Ca Khám] -> Gửi toàn bộ dữ liệu xuống Backend
-    document.getElementById('examForm').addEventListener('submit', function(event) {
-        event.preventDefault(); // Chặn hành vi load lại trang
+    // ================= 2. LOGIC LỊCH SỬ KHÁM =================
+    function loadAllAppointments() {
+        fetch('/api/v1/admin/appointments')
+            .then(res => res.json())
+            .then(data => {
+                const tbody = document.getElementById('appointmentTableBody');
+                tbody.innerHTML = '';
+                data.forEach(app => {
+                    let statusBadge = app.status === 'COMPLETED' ? 'bg-success' : (app.status === 'PENDING' ? 'bg-warning text-dark' : 'bg-secondary');
+                    let statusText = app.status === 'COMPLETED' ? 'Đã khám' : (app.status === 'PENDING' ? 'Chờ khám' : app.status);
 
+                    tbody.innerHTML += `<tr>
+                        <td class="fw-bold">#${app.id}</td>
+                        <td class="text-start fw-semibold">${app.patientName}</td>
+                        <td class="text-start"><i class="fa-solid fa-user-md text-primary me-1"></i>${app.doctorName}</td>
+                        <td>${app.date}</td>
+                        <td class="fw-bold text-danger">${app.time}</td>
+                        <td><span class="badge ${statusBadge}">${statusText}</span></td>
+                    </tr>`;
+                });
+            });
+    }
+
+    // ================= 3. LOGIC KHOA & BÁC SĨ =================
+    function loadSpecialtiesAndDoctors() {
+        fetch('/api/v1/patient/specialties') // Dùng chung API lấy khoa
+            .then(res => res.json())
+            .then(specs => {
+                specialtiesGlobal = specs;
+                const ul = document.getElementById('specialtyListGroup');
+                ul.innerHTML = '';
+                specs.forEach(s => {
+                    ul.innerHTML += `<li class="list-group-item"><b>${s.name}</b><br><small class="text-muted">${s.description || ''}</small></li>`;
+                });
+                loadDoctors(); // Tải bác sĩ sau khi có danh sách khoa
+            });
+    }
+
+    function loadDoctors() {
+        fetch('/api/v1/admin/specialties/doctors')
+            .then(res => res.json())
+            .then(docs => {
+                const tbody = document.getElementById('doctorTableBody');
+                tbody.innerHTML = '';
+                docs.forEach(doc => {
+                    let options = `<option value="">-- Chọn khoa --</option>`;
+                    specialtiesGlobal.forEach(s => {
+                        let selected = (doc.specialtyName === s.name) ? 'selected' : '';
+                        options += `<option value="${s.id}" ${selected}>${s.name}</option>`;
+                    });
+                    tbody.innerHTML += `<tr>
+                        <td class="fw-bold text-start">${doc.fullName}</td>
+                        <td>${doc.qualification || '-'}</td>
+                        <td>${doc.specialtyName || 'Chưa gán'}</td>
+                        <td>
+                            <select class="form-select form-select-sm" onchange="assignSpecialty(${doc.id}, this.value)">${options}</select>
+                        </td>
+                    </tr>`;
+                });
+            });
+    }
+
+    document.getElementById('specialtyForm').onsubmit = function(e) {
+        e.preventDefault();
         const payload = {
-            appointmentId: document.getElementById('selectedAppId').value,
-            diagnosis: document.getElementById('diagnosis').value,
-            prescriptions: prescriptionList // Gửi mảng thuốc kèm theo
+            name: document.getElementById('specName').value,
+            description: document.getElementById('specDesc').value
         };
+        fetch('/api/v1/admin/specialties', {
+            method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload)
+        }).then(res => {
+            if(res.ok) { document.getElementById('specialtyForm').reset(); loadSpecialtiesAndDoctors(); }
+        });
+    }
 
-        fetch('/api/v1/doctor/appointments/complete', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        })
+    function assignSpecialty(docId, specId) {
+        if(!specId) return;
+        fetch(`/api/v1/admin/specialties/doctors/${docId}?specialtyId=${specId}`, { method: 'PUT' })
+            .then(res => { if(res.ok) { alert("Điều chuyển chuyên khoa thành công!"); loadDoctors(); } });
+    }
+
+    // ================= 4. LOGIC QUẦY CẤP PHÁT (CORE-08) =================
+    function loadDispensations() {
+        fetch('/api/v1/admin/dispensations/queue')
+            .then(res => res.json())
+            .then(data => {
+                const tbody = document.getElementById('dispenseTableBody');
+                tbody.innerHTML = '';
+                if (data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="py-4 text-muted fw-bold">Không có đơn thuốc nào đang chờ cấp phát.</td></tr>';
+                    return;
+                }
+                data.forEach(app => {
+                    let medHtml = '<ul class="list-unstyled mb-0 text-start text-primary fw-semibold">';
+                    if (app.medicines) {
+                        app.medicines.forEach(m => { medHtml += `<li><i class="fa-solid fa-capsules me-2"></i>${m.name}: <span class="text-danger">${m.quantity}</span> viên/lọ</li>`; });
+                    }
+                    medHtml += '</ul>';
+
+                    tbody.innerHTML += `<tr>
+                        <td class="fw-bold">#${app.appointmentId}</td>
+                        <td class="fw-semibold">${app.patientName}</td>
+                        <td>${app.doctorName}</td>
+                        <td>${medHtml}</td>
+                        <td>
+                            <button class="btn btn-success btn-sm fw-bold shadow-sm" onclick="confirmDispense(${app.appointmentId})"><i class="fa-solid fa-check-circle me-1"></i>Xác nhận phát thuốc</button>
+                        </td>
+                    </tr>`;
+                });
+            });
+    }
+
+    function confirmDispense(appId) {
+        if(!confirm("Xác nhận cấp phát đơn thuốc này cho bệnh nhân và trừ vào tồn kho?")) return;
+        fetch('/api/v1/admin/dispensations/confirm/' + appId, { method: 'POST' })
             .then(async res => {
-                if (res.ok) {
-                    alert("🎉 Hoàn thành ca khám thành công! Tồn kho thuốc đã được trừ tự động.");
-                    document.getElementById('examCard').classList.add('d-none');
-                    document.getElementById('welcomeCard').classList.remove('d-none');
-                    loadQueue();     // Load lại hàng đợi (ca này sẽ biến mất do đã khám xong)
-                    loadMedicines(); // Nạp lại danh sách thuốc (số lượng tồn kho đã giảm)
+                if(res.ok) {
+                    alert("✅ Đã cấp phát và trừ tồn kho thành công!");
+                    loadDispensations();
+                    loadMedicines(); // Cập nhật lại số lượng tồn kho hiển thị ở Tab 1
                 } else {
                     const err = await res.text();
                     alert("Lỗi: " + err);
                 }
             });
-    });
+    }
 
+    // ================= XỬ LÝ ĐĂNG XUẤT =================
     function logout() {
         fetch('/api/v1/auth/logout', { method: 'POST' }).then(() => window.location.href = '/login');
     }

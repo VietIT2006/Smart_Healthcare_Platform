@@ -57,9 +57,9 @@
 
                     // Đọc phân quyền từ Backend trả về để điều hướng trang chuẩn CORE-02
                     setTimeout(() => {
-                        if (data.role === 'PATIENT') window.location.href = '/profile';
-                        else if (data.role === 'DOCTOR') window.location.href = '/api/v1/doctor/dashboard';
-                        else if (data.role === 'ADMIN') window.location.href = '/api/v1/admin/dashboard';
+                        if (data.role === 'PATIENT') window.location.href = '/patient/dashboard';
+                        else if (data.role === 'DOCTOR') window.location.href = '/doctor/dashboard';
+                        else if (data.role === 'ADMIN') window.location.href = '/admin/dashboard';
                     }, 800);
                 } else {
                     alertBox.className = 'alert alert-danger';
