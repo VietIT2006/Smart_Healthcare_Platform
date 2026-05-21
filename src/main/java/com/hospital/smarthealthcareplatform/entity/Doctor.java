@@ -29,7 +29,7 @@ public class Doctor {
 
     // Liên kết N-1 với Chuyên khoa (Nhiều bác sĩ thuộc 1 chuyên khoa)
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "specialty_id", nullable = false)
+    @JoinColumn(name = "specialty_id") // Đã gỡ bỏ nullable = false
     private Specialty specialty;
 
     // Bổ sung thêm 2 trường này vào class Doctor

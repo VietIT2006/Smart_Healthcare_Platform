@@ -23,6 +23,16 @@ public class WebController {
         return "register";
     }
 
+    // Giao diện Hồ sơ cá nhân dùng chung thích ứng theo Role (CORE-03)
+    @GetMapping("/profile")
+    public String profilePage(HttpSession session) {
+        // Bảo vệ trạm gác: Nếu chưa đăng nhập thì bắt buộc quay về trang login
+        if (session.getAttribute("userId") == null) {
+            return "redirect:/login";
+        }
+        return "profile"; // Tìm và mở file src/main/resources/templates/profile.html
+    }
+
     // Giao diện Dashboard cho Bệnh nhân (CORE-03 & CORE-05)
     @GetMapping("/patient/dashboard")
     public String patientDashboard(HttpSession session) {
@@ -50,6 +60,6 @@ public class WebController {
         if (role == null || !"ADMIN".equals(role)) {
             return "redirect:/login";
         }
-        return "admin-dashboard"; // <--- Đổi từ "admin-medicines" thành "admin-dashboard"
+        return "admin-dashboard";
     }
 }

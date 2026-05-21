@@ -5,7 +5,6 @@ import java.time.LocalDate;
 
 @Data
 public class UserProfileResponse {
-    private Long id;
     private String username;
     private String role;
     private String fullName;
@@ -13,4 +12,11 @@ public class UserProfileResponse {
     private String gender;
     private LocalDate dob;
     private String address;
+
+    private String clinicRoom;
+    private String biography;
+    private Double consultationFee;
+    private Integer experienceYears;
+    private String qualification;
+    private String specialtyName;
 }

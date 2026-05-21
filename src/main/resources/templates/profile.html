@@ -4,62 +4,94 @@
     <meta charset="UTF-8">
     <title>Hồ Sơ Cá Nhân - Smart Healthcare</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body class="bg-light">
 
-<nav class="navbar navbar-expand-lg navbar-dark bg-success mb-4 shadow-sm">
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4 shadow">
     <div class="container">
-        <a class="navbar-brand fw-bold" href="#">Smart Healthcare Platform</a>
-        <button class="btn btn-danger btn-sm fw-bold" onclick="logout()">Đăng Xuất</button>
+        <a class="navbar-brand fw-bold" href="#"><i class="fa-solid fa-address-card me-2"></i>Quản Lý Hồ Sơ</a>
+        <div>
+            <button class="btn btn-outline-light btn-sm me-2" onclick="goBack()">Quay Lại Dashboard</button>
+            <button class="btn btn-danger btn-sm fw-bold" onclick="logout()"><i class="fa-solid fa-sign-out-alt me-1"></i>Đăng Xuất</button>
+        </div>
     </div>
 </nav>
 
 <div class="container">
     <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card shadow-sm border-0 rounded-3">
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0 rounded-3 mb-5">
                 <div class="card-header bg-white py-3 border-bottom">
-                    <h5 class="mb-0 text-success fw-bold">Thông Tin Hồ Sơ Cá Nhân (CORE-03)</h5>
+                    <h5 class="mb-0 text-primary fw-bold"><i class="fa-solid fa-user-gear me-2"></i>Cập Nhật Thông Tin Cá Nhân</h5>
                 </div>
                 <div class="card-body p-4">
-                    <div id="statusMsg" class="alert d-none"></div>
+                    <div id="profileAlert" class="alert d-none"></div>
+                    <form id="profileForm" onsubmit="saveProfile(event)">
 
-                    <form id="profileForm">
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <label class="form-label text-muted">Tên tài khoản (Hệ thống khóa)</label>
-                                <input type="text" class="form-control bg-light" id="username" readonly>
-                            </div>
-                            <div class="col-md-6">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
                                 <label class="form-label fw-semibold">Họ và Tên</label>
                                 <input type="text" class="form-control" id="fullName" required>
                             </div>
-                        </div>
-                        <div class="row mb-3">
-                            <div class="col-md-6">
+                            <div class="col-md-6 mb-3">
                                 <label class="form-label fw-semibold">Số điện thoại</label>
                                 <input type="text" class="form-control" id="phone">
                             </div>
-                            <div class="col-md-6">
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold">Ngày sinh</label>
+                                <input type="date" class="form-control" id="dob">
+                            </div>
+                            <div class="col-md-6 mb-3">
                                 <label class="form-label fw-semibold">Giới tính</label>
                                 <select class="form-select" id="gender">
+                                    <option value="">-- Chọn giới tính --</option>
                                     <option value="Nam">Nam</option>
                                     <option value="Nữ">Nữ</option>
                                     <option value="Khác">Khác</option>
                                 </select>
                             </div>
                         </div>
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <label class="form-label fw-semibold">Ngày sinh</label>
-                                <input type="date" class="form-control" id="dob">
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">Địa chỉ thường trú</label>
+                            <input type="text" class="form-control" id="address">
+                        </div>
+
+                        <div id="doctorFields" class="d-none border p-3 rounded bg-white mb-4 shadow-sm">
+                            <h6 class="text-success fw-bold border-bottom pb-2 mb-3"><i class="fa-solid fa-user-md me-1"></i>Thông Số Hành Nghề Bác Sĩ</h6>
+                            <div class="row">
+                                <div class="col-6 mb-2">
+                                    <label class="form-label small fw-bold">Phòng làm việc lâm sàng</label>
+                                    <input type="text" class="form-control" id="docRoom">
+                                </div>
+                                <div class="col-6 mb-2">
+                                    <label class="form-label small fw-bold">Học hàm / Học vị</label>
+                                    <input type="text" class="form-control" id="docQual" placeholder="VD: Thạc sĩ Y khoa">
+                                </div>
                             </div>
-                            <div class="col-md-6">
-                                <label class="form-label fw-semibold">Địa chỉ liên hệ</label>
-                                <input type="text" class="form-control" id="address">
+                            <div class="row">
+                                <div class="col-6 mb-2">
+                                    <label class="form-label small fw-bold">Giá tiền khám (VNĐ)</label>
+                                    <input type="number" class="form-control" id="docFee" min="0">
+                                </div>
+                                <div class="col-6 mb-2">
+                                    <label class="form-label small fw-bold">Số năm kinh nghiệm</label>
+                                    <input type="number" class="form-control" id="docExp" min="0">
+                                </div>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label small fw-bold">Chuyên khoa hiện tại (Admin điều phối)</label>
+                                <input type="text" class="form-control bg-light text-muted" id="docSpec" readonly>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label small fw-bold">Tóm tắt tiểu sử năng lực</label>
+                                <textarea class="form-control" id="docBio" rows="2" placeholder="Quá trình công tác..."></textarea>
                             </div>
                         </div>
-                        <button type="submit" class="btn btn-success w-100 fw-bold py-2 mt-2">Lưu Cập Nhật Hồ Sơ</button>
+
+                        <button type="submit" class="btn btn-primary w-100 fw-bold py-2"><i class="fa-solid fa-cloud-arrow-up me-2"></i>Lưu & Đồng Bộ Hồ Sơ</button>
                     </form>
                 </div>
             </div>
@@ -68,58 +100,83 @@
 </div>
 
 <script>
-    // 1. Tự động load dữ liệu khi View được hiển thị lên trình duyệt
+    let currentRole = '';
+
     window.onload = function() {
         fetch('/api/v1/users/profile')
-            .then(async response => {
-                if (response.status === 401) {
-                    window.location.href = '/login'; // Phiên hết hạn, ép về login
+            .then(res => res.json())
+            .then(data => {
+                if(data.error) {
+                    window.location.href = '/login';
                     return;
                 }
-                const data = await response.json();
-                // Map trực tiếp data DTO phẳng từ backend vào form frontend
-                document.getElementById('username').value = data.username || '';
+
+                currentRole = data.role; // Lưu trữ role để xử lý nút quay lại
+
+                // Đổ dữ liệu dùng chung
                 document.getElementById('fullName').value = data.fullName || '';
                 document.getElementById('phone').value = data.phone || '';
-                document.getElementById('gender').value = data.gender || 'Nam';
-                document.getElementById('dob').value = data.dob || '';
                 document.getElementById('address').value = data.address || '';
+                if(data.dob) document.getElementById('dob').value = data.dob;
+                if(data.gender) document.getElementById('gender').value = data.gender;
+
+                // 🚀 Bật Form bác sĩ nếu đúng vai trò
+                if(data.role === 'DOCTOR') {
+                    document.getElementById('doctorFields').classList.remove('d-none');
+                    document.getElementById('docRoom').value = data.clinicRoom || '';
+                    document.getElementById('docQual').value = data.qualification || '';
+                    document.getElementById('docFee').value = data.consultationFee || 0;
+                    document.getElementById('docExp').value = data.experienceYears || 0;
+                    document.getElementById('docSpec').value = data.specialtyName || 'Chưa phân khoa';
+                    document.getElementById('docBio').value = data.biography || '';
+                }
             });
     };
 
-    // 2. Đồng bộ cập nhật thông tin cá nhân (PUT)
-    document.getElementById('profileForm').addEventListener('submit', function(e) {
-        e.preventDefault();
+    function saveProfile(event) {
+        event.preventDefault();
         const payload = {
             fullName: document.getElementById('fullName').value,
             phone: document.getElementById('phone').value,
-            gender: document.getElementById('gender').value,
+            address: document.getElementById('address').value,
             dob: document.getElementById('dob').value,
-            address: document.getElementById('address').value
+            gender: document.getElementById('gender').value,
+
+            // Lấy thêm các trường bác sĩ
+            clinicRoom: document.getElementById('docRoom').value,
+            qualification: document.getElementById('docQual').value,
+            consultationFee: document.getElementById('docFee').value,
+            experienceYears: document.getElementById('docExp').value,
+            biography: document.getElementById('docBio').value
         };
 
         fetch('/api/v1/users/profile', {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
-        })
-            .then(response => {
-                const statusMsg = document.getElementById('statusMsg');
-                statusMsg.classList.remove('d-none');
-                if (response.ok) {
-                    statusMsg.className = 'alert alert-success';
-                    statusMsg.textContent = 'Hồ sơ cá nhân đã được đồng bộ lưu thành công!';
-                } else {
-                    statusMsg.className = 'alert alert-danger';
-                    statusMsg.textContent = 'Đã xảy ra lỗi trong quá trình cập nhật!';
-                }
-            });
-    });
+        }).then(async res => {
+            const alertBox = document.getElementById('profileAlert');
+            alertBox.classList.remove('d-none');
+            if(res.ok) {
+                alertBox.className = 'alert alert-success';
+                alertBox.innerHTML = '<i class="fa-solid fa-check-circle me-2"></i>Cập nhật hồ sơ thành công!';
+            } else {
+                alertBox.className = 'alert alert-danger';
+                alertBox.innerHTML = '<i class="fa-solid fa-triangle-exclamation me-2"></i>Có lỗi xảy ra khi cập nhật.';
+            }
+        });
+    }
 
-    // 3. Hàm Đăng xuất xóa trắng phiên làm việc của session ngầm
+    // Nút quay lại thông minh dựa trên Role
+    function goBack() {
+        if(currentRole === 'DOCTOR') window.location.href = '/doctor/dashboard';
+        else if(currentRole === 'PATIENT') window.location.href = '/patient/dashboard';
+        else if(currentRole === 'ADMIN') window.location.href = '/admin/dashboard';
+        else window.history.back();
+    }
+
     function logout() {
-        fetch('/api/v1/auth/logout', { method: 'POST' })
-            .then(() => window.location.href = '/login');
+        fetch('/api/v1/auth/logout', { method: 'POST' }).then(() => window.location.href = '/login');
     }
 </script>
 </body>

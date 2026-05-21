@@ -81,7 +81,48 @@
 </div>
 
 <script>
-    // Logic kết nối API lấy danh sách thuốc và nạp hàng đợi sẽ được gọi đồng bộ tại đây
+    window.onload = function() {
+        loadQueue();
+    };
+
+    // Gọi API để nạp danh sách chờ khám
+    function loadQueue() {
+        fetch('/api/v1/doctor/appointments/queue')
+            .then(res => res.json())
+            .then(data => {
+                const queueList = document.getElementById('queueList');
+                queueList.innerHTML = '';
+
+                if (data.length === 0) {
+                    queueList.innerHTML = '<div class="text-center p-4 text-muted"><i class="fa-solid fa-mug-hot fa-2x mb-2"></i><br>Chưa có bệnh nhân nào đặt lịch.</div>';
+                    return;
+                }
+
+                data.forEach(app => {
+                    queueList.innerHTML += `
+                    <button class="list-group-item list-group-item-action py-3 border-bottom" onclick="selectAppointment(${app.id}, '${app.symptoms}')">
+                        <div class="d-flex w-100 justify-content-between align-items-center">
+                            <h6 class="mb-1 fw-bold text-primary"><i class="fa-solid fa-hospital-user me-2"></i>${app.patientName}</h6>
+                            <span class="badge bg-danger rounded-pill">${app.time}</span>
+                        </div>
+                        <p class="mb-1 small text-secondary mt-2"><b>Triệu chứng:</b> ${app.symptoms}</p>
+                        <small class="text-muted"><i class="fa-regular fa-calendar me-1"></i>${app.date}</small>
+                    </button>
+                    `;
+                });
+            });
+    }
+
+    // Khi bác sĩ click vào 1 bệnh nhân
+    function selectAppointment(id, symptoms) {
+        document.getElementById('selectedAppId').value = id;
+        document.getElementById('patientSymptoms').value = symptoms;
+
+        // Hiện form chẩn đoán bệnh
+        document.getElementById('welcomeCard').classList.add('d-none');
+        document.getElementById('examCard').classList.remove('d-none');
+    }
+
     function logout() {
         fetch('/api/v1/auth/logout', { method: 'POST' }).then(() => window.location.href = '/login');
     }

@@ -21,6 +21,9 @@
 </nav>
 
 <div class="container">
+    <li class="nav-item">
+        <button class="nav-link" id="appointment-tab" data-bs-toggle="tab" data-bs-target="#appointment-panel" type="button" onclick="loadAllAppointments()"><i class="fa-solid fa-calendar-check me-2"></i>Lịch Sử Khám Bệnh</button>
+    </li>
     <ul class="nav nav-tabs mb-4 bg-white p-2 rounded shadow-sm" id="adminTab" role="tablist">
         <li class="nav-item">
             <button class="nav-link active" id="medicine-tab" data-bs-toggle="tab" data-bs-target="#medicine-panel" type="button"><i class="fa-solid fa-pills me-2"></i>Quản Lý Kho Thuốc (CORE-04)</button>
@@ -31,6 +34,21 @@
     </ul>
 
     <div class="tab-content" id="adminTabContent">
+        <div class="tab-pane fade" id="appointment-panel" role="tabpanel">
+            <div class="card shadow-sm border-0 rounded-3">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0 fw-bold text-dark"><i class="fa-solid fa-clock-rotate-left text-info me-2"></i>Toàn Bộ Lịch Sử Đặt Lịch & Khám Bệnh</h5>
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-hover text-center align-middle mb-0">
+                        <thead class="table-info">
+                        <tr><th>Mã Hẹn</th><th>Bệnh Nhân</th><th>Bác Sĩ Phụ Trách</th><th>Ngày Khám</th><th>Giờ Khám</th><th>Trạng Thái</th></tr>
+                        </thead>
+                        <tbody id="appointmentTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
         <div class="tab-pane fade show active" id="medicine-panel" role="tabpanel">
             <div class="card shadow-sm border-0 rounded-3">
                 <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
@@ -133,126 +151,152 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    let medicineModal;
-    let cachedSpecialties = []; // Lưu trữ tạm danh sách khoa để nạp vào dropdown
+    let prescriptionList = []; // Mảng lưu trữ danh sách thuốc bác sĩ đang kê
 
     window.onload = function() {
-        medicineModal = new bootstrap.Modal(document.getElementById('medicineModal'));
-        loadMedicines();
+        loadQueue();
+        loadMedicines(); // Nạp danh sách thuốc vào dropdown
     };
 
-    // --- LOGIC PHÂN HỆ 1: KHO THUỐC ---
-    function loadMedicines() {
-        fetch('/api/v1/admin/medicines')
+    // 1. Tải danh sách bệnh nhân chờ khám (Đã làm ở bước trước)
+    function loadQueue() {
+        fetch('/api/v1/doctor/appointments/queue')
             .then(res => res.json())
             .then(data => {
-                const tbody = document.getElementById('medicineTableBody');
-                tbody.innerHTML = '';
-                data.forEach(med => {
-                    tbody.innerHTML += `<tr>
-                        <td>${med.id}</td><td class="text-start fw-bold">${med.medicineName}</td><td>${med.category}</td><td>${med.unit}</td>
-                        <td class="text-danger fw-semibold">${med.price.toLocaleString('vi-VN')} đ</td>
-                        <td><span class="badge ${med.quantityInStock > 10 ? 'bg-success' : 'bg-danger'}">${med.quantityInStock}</span></td>
-                        <td>
-                            <button class="btn btn-sm btn-outline-primary py-0" onclick="showEditModal(${med.id}, '${med.medicineName}', '${med.category}', '${med.unit}', ${med.price}, ${med.quantityInStock})">Sửa</button>
-                            <button class="btn btn-sm btn-outline-danger py-0 ms-1" onclick="deleteMedicine(${med.id})">Xóa</button>
-                        </td>
-                    </tr>`;
-                });
-            });
-    }
-
-    function showAddModal() { document.getElementById('medicineForm').reset(); document.getElementById('medId').value = ''; document.getElementById('modalTitle').innerText = 'Thêm Thuốc Mới'; medicineModal.show(); }
-    function showEditModal(id, name, cat, unit, price, qty) { document.getElementById('medId').value = id; document.getElementById('medName').value = name; document.getElementById('medCat').value = cat; document.getElementById('medUnit').value = unit; document.getElementById('medPrice').value = price; document.getElementById('medQty').value = qty; document.getElementById('modalTitle').innerText = 'Sửa Thuốc'; medicineModal.show(); }
-
-    document.getElementById('medicineForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        const id = document.getElementById('medId').value;
-        const payload = { medicineName: document.getElementById('medName').value, category: document.getElementById('medCat').value, unit: document.getElementById('medUnit').value, price: document.getElementById('medPrice').value, quantityInStock: document.getElementById('medQty').value };
-        fetch(id ? '/api/v1/admin/medicines/' + id : '/api/v1/admin/medicines', { method: id ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
-            .then(() => { medicineModal.hide(); loadMedicines(); });
-    });
-
-    function deleteMedicine(id) { if(confirm("Xác nhận xóa thuốc?")) { fetch('/api/v1/admin/medicines/' + id, { method: 'DELETE' }).then(() => loadMedicines()); } }
-
-    // --- LOGIC PHÂN HỆ 2: CHUYÊN KHOA & BÁC SĨ ---
-    function loadSpecialtySection() {
-        // Tải danh sách chuyên khoa trước
-        fetch('/api/v1/admin/specialties')
-            .then(res => res.json())
-            .then(data => {
-                cachedSpecialties = data;
-                const listGroup = document.getElementById('specialtyListGroup');
-                listGroup.innerHTML = '';
-                data.forEach(spec => {
-                    listGroup.innerHTML += `<li class="list-group-item d-flex justify-content-between align-items-center fw-semibold text-muted">
-                        ${spec.name} <small class="text-secondary font-monospace">ID: ${spec.id}</small>
-                    </li>`;
-                });
-                // Sau đó tải danh sách bác sĩ để hiển thị dropdown điều chuyển khoa
-                loadDoctorsManagement();
-            });
-    }
-
-    function loadDoctorsManagement() {
-        fetch('/api/v1/admin/doctors')
-            .then(res => res.json())
-            .then(doctors => {
-                const tbody = document.getElementById('doctorTableBody');
-                tbody.innerHTML = '';
-                doctors.forEach(doc => {
-                    // Tạo chuỗi option từ danh sách khoa đã cache
-                    let options = `<option value="">-- Chọn khoa để điều phối --</option>`;
-                    cachedSpecialties.forEach(spec => {
-                        options += `<option value="${spec.id}" ${doc.specialtyName === spec.name ? 'selected' : ''}>${spec.name}</option>`;
-                    });
-
-                    tbody.innerHTML += `<tr>
-                        <td class="text-start fw-bold text-dark"><i class="fa-solid fa-user-md text-primary me-2"></i>${doc.fullName}</td>
-                        <td><span class="badge bg-light text-dark">${doc.qualification}</span></td>
-                        <td><span class="badge bg-success bg-opacity-10 text-success py-1 px-2">${doc.specialtyName}</span></td>
-                        <td>
-                            <select class="form-select form-select-sm d-inline-block w-auto" onchange="changeDoctorSpecialty(${doc.id}, this.value)">
-                                ${options}
-                            </select>
-                        </td>
-                    </tr>`;
-                });
-            });
-    }
-
-    // Gửi yêu cầu cập nhật chuyên khoa cho Bác sĩ trực tiếp khi Admin thay đổi Dropdown
-    function changeDoctorSpecialty(doctorId, specialtyId) {
-        if(!specialtyId) return;
-        fetch(`/api/v1/admin/doctors/${doctorId}/specialty?specialtyId=${specialtyId}`, { method: 'PUT' })
-            .then(res => {
-                if(res.ok) {
-                    alert("Điều chuyển chuyên khoa cho Bác sĩ thành công!");
-                    loadSpecialtySection();
+                const queueList = document.getElementById('queueList');
+                queueList.innerHTML = '';
+                if (data.length === 0) {
+                    queueList.innerHTML = '<div class="text-center p-4 text-muted"><i class="fa-solid fa-mug-hot fa-2x mb-2"></i><br>Chưa có bệnh nhân nào đặt lịch.</div>';
+                    return;
                 }
+                data.forEach(app => {
+                    queueList.innerHTML += `
+                    <button class="list-group-item list-group-item-action py-3 border-bottom" onclick="selectAppointment(${app.id}, '${app.symptoms}')">
+                        <div class="d-flex w-100 justify-content-between align-items-center">
+                            <h6 class="mb-1 fw-bold text-primary"><i class="fa-solid fa-hospital-user me-2"></i>${app.patientName}</h6>
+                            <span class="badge bg-danger rounded-pill">${app.time}</span>
+                        </div>
+                        <p class="mb-1 small text-secondary mt-2"><b>Triệu chứng:</b> ${app.symptoms}</p>
+                        <small class="text-muted"><i class="fa-regular fa-calendar me-1"></i>${app.date}</small>
+                    </button>`;
+                });
             });
     }
 
-    // Submit form thêm mới chuyên khoa
-    document.getElementById('specialtyForm').addEventListener('submit', function(e) {
-        e.preventDefault();
+    // 2. Chọn bệnh nhân để khám
+    function selectAppointment(id, symptoms) {
+        document.getElementById('selectedAppId').value = id;
+        document.getElementById('patientSymptoms').value = symptoms;
+        document.getElementById('welcomeCard').classList.add('d-none');
+        document.getElementById('examCard').classList.remove('d-none');
+
+        // Reset form cho bệnh nhân mới
+        document.getElementById('diagnosis').value = '';
+        prescriptionList = [];
+        renderPrescriptionTable();
+    }
+
+    // 3. Tải danh sách thuốc từ kho (phục vụ kê đơn)
+    function loadMedicines() {
+        fetch('/api/v1/admin/medicines') // Gọi sang kho API của Admin (hoặc API dùng chung)
+            .then(res => res.json())
+            .then(data => {
+                const medSelect = document.getElementById('medSelect');
+                medSelect.innerHTML = '<option value="">-- Chọn thuốc điều trị --</option>';
+                data.forEach(med => {
+                    // Lưu số lượng tồn kho vào attribute data-stock để JS kiểm tra
+                    medSelect.innerHTML += `<option value="${med.id}" data-name="${med.medicineName}" data-stock="${med.quantityInStock}">${med.medicineName} (Kho còn: ${med.quantityInStock})</option>`;
+                });
+            }).catch(err => console.log("Không tải được thuốc", err));
+    }
+
+    // 4. Xử lý nút [+] Kê thêm thuốc vào đơn
+    function addMedicineToPrescription() {
+        const medSelect = document.getElementById('medSelect');
+        const medId = medSelect.value;
+        const qty = parseInt(document.getElementById('medQty').value);
+
+        if (!medId || qty <= 0) {
+            alert("Vui lòng chọn thuốc và nhập số lượng hợp lệ!");
+            return;
+        }
+
+        const selectedOption = medSelect.options[medSelect.selectedIndex];
+        const medName = selectedOption.getAttribute('data-name');
+        const stock = parseInt(selectedOption.getAttribute('data-stock'));
+
+        if (qty > stock) {
+            alert(`Lỗi: Kho không đủ thuốc! Chỉ còn ${stock} viên/lọ.`);
+            return;
+        }
+
+        // Kiểm tra xem thuốc đã có trong đơn chưa
+        const existingIndex = prescriptionList.findIndex(p => p.medicineId == medId);
+        if (existingIndex >= 0) {
+            if (prescriptionList[existingIndex].quantity + qty > stock) {
+                alert(`Lỗi: Tổng số lượng bạn kê đã vượt quá tồn kho (${stock})!`);
+                return;
+            }
+            prescriptionList[existingIndex].quantity += qty;
+        } else {
+            // Thêm mới vào mảng
+            prescriptionList.push({ medicineId: medId, name: medName, quantity: qty });
+        }
+        renderPrescriptionTable();
+    }
+
+    // 5. Xóa thuốc khỏi đơn
+    function removeMedicine(medId) {
+        prescriptionList = prescriptionList.filter(p => p.medicineId != medId);
+        renderPrescriptionTable();
+    }
+
+    // 6. Vẽ lại bảng đơn thuốc trên giao diện
+    function renderPrescriptionTable() {
+        const tbody = document.getElementById('prescriptionBody');
+        tbody.innerHTML = '';
+        prescriptionList.forEach(p => {
+            tbody.innerHTML += `
+            <tr>
+                <td class="fw-semibold text-start">${p.name}</td>
+                <td class="fw-bold text-primary">${p.quantity}</td>
+                <td><button type="button" class="btn btn-sm btn-outline-danger" onclick="removeMedicine(${p.medicineId})"><i class="fa-solid fa-trash"></i></button></td>
+            </tr>`;
+        });
+    }
+
+    // 7. Xử lý nút [Hoàn Thành Ca Khám] -> Gửi toàn bộ dữ liệu xuống Backend
+    document.getElementById('examForm').addEventListener('submit', function(event) {
+        event.preventDefault(); // Chặn hành vi load lại trang
+
         const payload = {
-            name: document.getElementById('specName').value,
-            description: document.getElementById('specDesc').value
+            appointmentId: document.getElementById('selectedAppId').value,
+            diagnosis: document.getElementById('diagnosis').value,
+            prescriptions: prescriptionList // Gửi mảng thuốc kèm theo
         };
-        fetch('/api/v1/admin/specialties', {
+
+        fetch('/api/v1/doctor/appointments/complete', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
-        }).then(res => {
-            if(res.ok) {
-                document.getElementById('specialtyForm').reset();
-                loadSpecialtySection();
-            }
-        });
+        })
+            .then(async res => {
+                if (res.ok) {
+                    alert("🎉 Hoàn thành ca khám thành công! Tồn kho thuốc đã được trừ tự động.");
+                    document.getElementById('examCard').classList.add('d-none');
+                    document.getElementById('welcomeCard').classList.remove('d-none');
+                    loadQueue();     // Load lại hàng đợi (ca này sẽ biến mất do đã khám xong)
+                    loadMedicines(); // Nạp lại danh sách thuốc (số lượng tồn kho đã giảm)
+                } else {
+                    const err = await res.text();
+                    alert("Lỗi: " + err);
+                }
+            });
     });
 
-    function logout() { fetch('/api/v1/auth/logout', { method: 'POST' }).then(() => window.location.href = '/login'); }
+    function logout() {
+        fetch('/api/v1/auth/logout', { method: 'POST' }).then(() => window.location.href = '/login');
+    }
 </script>
 </body>
 </html>

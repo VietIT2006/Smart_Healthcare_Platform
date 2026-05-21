@@ -28,10 +28,7 @@
                         <div class="mb-3">
                             <label class="form-label fw-semibold">1. Chọn Chuyên Khoa Khám</label>
                             <select class="form-select" id="specialtySelect" required onchange="loadDoctorsBySpecialty()">
-                                <option value="">-- Chọn chuyên khoa --</option>
-                                <option value="1">Nội Tổng Quát</option>
-                                <option value="2">Nhi Khoa</option>
-                                <option value="3">Tai Mũi Họng</option>
+                                <option value="">-- Đang tải dữ liệu chuyên khoa... --</option>
                             </select>
                         </div>
                         <div class="mb-3">
@@ -123,7 +120,7 @@
 
 <script>
     window.onload = function() {
-        // Tải thông tin hồ sơ
+        // 1. Tải thông tin hồ sơ
         fetch('/api/v1/users/profile')
             .then(res => res.json())
             .then(data => {
@@ -132,6 +129,18 @@
                 document.getElementById('phone').value = data.phone || '';
                 document.getElementById('address').value = data.address || '';
             });
+
+        // 2. TỰ ĐỘNG TẢI DANH SÁCH CHUYÊN KHOA TỪ DATABASE
+        fetch('/api/v1/patient/specialties')
+            .then(res => res.json())
+            .then(data => {
+                const specSelect = document.getElementById('specialtySelect');
+                specSelect.innerHTML = '<option value="">-- Chọn chuyên khoa --</option>';
+                data.forEach(spec => {
+                    specSelect.innerHTML += `<option value="${spec.id}">${spec.name}</option>`;
+                });
+            });
+
         loadAppointmentHistory();
     };
 
