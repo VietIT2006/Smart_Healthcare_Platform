@@ -25,6 +25,7 @@ public class Appointment {
     @Column(length = 20, nullable = false)
     private String status = "PENDING";
 
+
     @Column(columnDefinition = "TEXT")
     private String symptoms; // Triệu chứng bệnh nhân tự điền
 

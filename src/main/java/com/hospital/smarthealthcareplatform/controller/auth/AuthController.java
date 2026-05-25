@@ -33,24 +33,33 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request, HttpServletRequest servletRequest) {
-        User user = userService.login(request.getUsername(), request.getPassword());
+        try {
+            // Đưa logic đăng nhập vào khối try
+            User user = userService.login(request.getUsername(), request.getPassword());
 
-        HttpSession oldSession = servletRequest.getSession(false);
-        if (oldSession != null) {
-            oldSession.invalidate();
+            HttpSession oldSession = servletRequest.getSession(false);
+            if (oldSession != null) {
+                oldSession.invalidate();
+            }
+
+            HttpSession newSession = servletRequest.getSession(true);
+            // LƯU CÁC THUỘC TÍNH NGUYÊN THỦY (Tránh lỗi lệch ClassLoader của DevTools)
+            newSession.setAttribute("userId", user.getId());
+            newSession.setAttribute("username", user.getUsername());
+            newSession.setAttribute("userRole", user.getRole().toUpperCase());
+
+            return ResponseEntity.ok(Map.of(
+                    "username", user.getUsername(),
+                    "role", user.getRole().toUpperCase(),
+                    "message", "Đăng nhập thành công!"
+            ));
+
+        } catch (RuntimeException e) {
+            // 🚀 KHI SAI MẬT KHẨU: Bắt lỗi ở đây và trả về JSON có chứa "error"
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of(
+                    "error", e.getMessage()
+            ));
         }
-
-        HttpSession newSession = servletRequest.getSession(true);
-        // LƯU CÁC THUỘC TÍNH NGUYÊN THỦY (Tránh lỗi lệch ClassLoader của DevTools)
-        newSession.setAttribute("userId", user.getId());
-        newSession.setAttribute("username", user.getUsername());
-        newSession.setAttribute("userRole", user.getRole().toUpperCase());
-
-        return ResponseEntity.ok(Map.of(
-                "username", user.getUsername(),
-                "role", user.getRole(),
-                "message", "Đăng nhập thành công!"
-        ));
     }
     @PostMapping("/logout")
     public ResponseEntity<?> logout(HttpServletRequest request) {
